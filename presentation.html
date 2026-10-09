@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f4">
+  <title>Lucent — Product presentation</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202820;
+      --muted: #667168;
+      --green: #256c50;
+      --deep: #174b37;
+      --pale: #eaf4ee;
+      --line: #e3e9e3;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; background: #f5f7f4; color: var(--ink); }
+    button { font: inherit; }
+    .deck { min-height: 100vh; display: grid; grid-template-rows: 1fr auto; }
+    .stage { display: grid; place-items: center; padding: 30px; }
+    .slide {
+      display: none; position: relative; width: min(1050px, 100%); min-height: min(650px, calc(100vh - 120px));
+      padding: clamp(28px, 6vw, 72px); overflow: hidden; border: 1px solid var(--line);
+      border-radius: 22px; background: #fff; box-shadow: 0 22px 70px rgba(27, 47, 33, .08);
+    }
+    .slide.active { display: flex; flex-direction: column; justify-content: center; animation: arrive .24s ease-out; }
+    @keyframes arrive { from { opacity: .45; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .slide::after { content: ""; position: absolute; right: -130px; top: -190px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, #edf5ef 0, rgba(237,245,239,0) 70%); pointer-events: none; }
+    .brand { position: absolute; z-index: 1; top: 25px; left: clamp(28px, 6vw, 72px); display: flex; align-items: center; gap: 9px; color: var(--green); font-size: 13px; font-weight: 800; letter-spacing: -.3px; }
+    .brand-mark { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 8px; background: var(--green); color: white; font-size: 15px; }
+    .content { position: relative; z-index: 1; max-width: 850px; }
+    .eyebrow { margin-bottom: 12px; color: var(--green); font-size: 11px; font-weight: 800; letter-spacing: 1.7px; text-transform: uppercase; }
+    h1 { max-width: 780px; margin: 0; font-size: clamp(40px, 7vw, 76px); line-height: 1.03; letter-spacing: -3px; }
+    h2 { margin: 0 0 14px; font-size: clamp(30px, 4vw, 46px); line-height: 1.1; letter-spacing: -1.7px; }
+    h3 { margin: 0 0 7px; font-size: 16px; letter-spacing: -.3px; }
+    p { color: var(--muted); font-size: clamp(14px, 1.8vw, 18px); line-height: 1.65; }
+    .lead { max-width: 670px; margin: 19px 0 0; font-size: clamp(17px, 2vw, 22px); }
+    .small-note { font-size: 12px; line-height: 1.6; }
+    .pill { display: inline-flex; align-items: center; gap: 8px; margin-top: 27px; padding: 9px 13px; border: 1px solid #dce8de; border-radius: 99px; background: #fbfdfb; color: #47634f; font-size: 11px; font-weight: 700; }
+    .pill-dot { width: 7px; height: 7px; border-radius: 50%; background: #58a879; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 26px; }
+    .card { padding: 18px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.88); }
+    .card p { margin: 0; font-size: 13px; }
+    .card-icon { display: grid; place-items: center; width: 31px; height: 31px; margin-bottom: 13px; border-radius: 10px; background: var(--pale); color: var(--green); font-weight: 800; }
+    .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 30px; }
+    .flow-step { min-height: 144px; padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+    .flow-number { color: var(--green); font-size: 10px; font-weight: 800; letter-spacing: .7px; }
+    .flow-step h3 { margin-top: 11px; font-size: 13px; }
+    .flow-step p { margin: 0; font-size: 11px; line-height: 1.55; }
+    .quote { margin-top: 23px; padding: 19px 21px; border-left: 3px solid #83ad91; border-radius: 0 11px 11px 0; background: #f4f8f4; color: #47554a; font-size: 14px; line-height: 1.7; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 24px; }
+    .list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .list li { display: grid; grid-template-columns: 21px 1fr; gap: 9px; color: #546157; font-size: 13px; line-height: 1.55; }
+    .check { color: var(--green); font-weight: 800; }
+    .caution { color: #a4612b; font-weight: 800; }
+    .closing { padding: 17px 20px; border-radius: 13px; background: var(--deep); color: #fff; font-size: 15px; line-height: 1.65; }
+    .closing strong { color: #d5efdc; }
+    .controls { display: flex; align-items: center; justify-content: center; gap: 13px; padding: 12px 20px 18px; color: var(--muted); }
+    .control-button { min-width: 70px; padding: 9px 13px; border: 1px solid #dce4dc; border-radius: 8px; background: #fff; color: #405447; font-size: 11px; font-weight: 700; cursor: pointer; }
+    .control-button:hover:not(:disabled) { border-color: #9bb8a2; background: #f5faf6; }
+    .control-button:disabled { opacity: .45; cursor: not-allowed; }
+    .counter { min-width: 55px; text-align: center; font-size: 11px; font-variant-numeric: tabular-nums; }
+    .progress { position: fixed; z-index: 5; top: 0; left: 0; width: 0; height: 3px; background: var(--green); transition: width .2s; }
+    .toolbar { position: fixed; z-index: 5; top: 13px; right: 16px; display: flex; gap: 7px; }
+    .toolbar .control-button { min-width: 0; padding: 7px 10px; font-size: 10px; }
+    @media (max-width: 680px) {
+      .stage { padding: 13px; }
+      .slide { min-height: calc(100vh - 105px); padding: 61px 23px 28px; border-radius: 16px; }
+      .brand { top: 21px; left: 23px; }
+      .flow { grid-template-columns: 1fr; gap: 8px; }
+      .flow-step { min-height: 0; display: grid; grid-template-columns: 25px 1fr; column-gap: 8px; padding: 11px; }
+      .flow-number { grid-row: span 2; padding-top: 2px; }
+      .flow-step h3 { margin: 0 0 3px; }
+      .flow-step p { grid-column: 2; }
+      .grid, .two-col { grid-template-columns: 1fr; gap: 9px; }
+      .card { padding: 13px; }
+      .card-icon { float: left; margin: 0 10px 0 0; }
+      .card h3 { padding-top: 6px; }
+      .card p { clear: both; padding-top: 8px; }
+      .toolbar { top: 9px; right: 9px; }
+      .toolbar .control-button { padding: 6px 8px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+    @media print {
+      @page { size: landscape; margin: 0; }
+      body { background: #fff; }
+      .deck { display: block; }
+      .stage { display: block; padding: 0; }
+      .slide, .slide.active { display: flex !important; width: 100%; min-height: 100vh; border: 0; border-radius: 0; box-shadow: none; page-break-after: always; animation: none; }
+      .controls, .toolbar, .progress { display: none !important; }
+      .flow-step { min-height: 120px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+  <div class="toolbar">
+    <button class="control-button" id="print-button" type="button" aria-label="Print or save as PDF">Print / PDF</button>
+    <button class="control-button" id="open-app-button" type="button">Open Lucent</button>
+  </div>
+  <main class="deck" aria-label="Lucent product presentation">
+    <div class="stage">
+      <section class="slide active" aria-label="Slide 1 of 6">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">L</span> lucent.</div>
+        <div class="content">
+          <div class="eyebrow">Conversation clarity, locally</div>
+          <h1>What did you miss?</h1>
+          <p class="lead">Lucent turns a long chat catch-up into a clear view of decisions, likely actions, and time-sensitive messages.</p>
+          <div class="pill"><span class="pill-dot" aria-hidden="true"></span>Private by design · Works in your browser</div>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Slide 2 of 6">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">L</span> lucent.</div>
+        <div class="content">
+          <div class="eyebrow">The problem</div>
+          <h2>Important details get buried in busy conversations.</h2>
+          <p>When someone returns to a group chat, they may have to scroll through dozens or hundreds of messages just to find out what changed and what needs their attention.</p>
+          <div class="grid">
+            <article class="card"><div class="card-icon" aria-hidden="true">↗</div><h3>Too much to scan</h3><p>Updates, replies, and side conversations make catch-up slow.</p></article>
+            <article class="card"><div class="card-icon" aria-hidden="true">✓</div><h3>Tasks are easy to miss</h3><p>Requests, owners, and due dates can disappear in the thread.</p></article>
+            <article class="card"><div class="card-icon" aria-hidden="true">◇</div><h3>Decisions lose context</h3><p>It is hard to distinguish a final decision from a passing suggestion.</p></article>
+            <article class="card"><div class="card-icon" aria-hidden="true">⌁</div><h3>Privacy matters</h3><p>Work or personal conversations should not need to leave the device for a basic recap.</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Slide 3 of 6">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">L</span> lucent.</div>
+        <div class="content">
+          <div class="eyebrow">The solution</div>
+          <h2>One calm workspace for your catch-up.</h2>
+          <p>Paste a transcript or import a supported text, CSV, or JSON export. Lucent analyzes it in the browser and organizes useful signals into a short brief and reviewable views.</p>
+          <div class="grid">
+            <article class="card"><div class="card-icon" aria-hidden="true">✦</div><h3>Short version</h3><p>A quick orientation to likely decisions, actions, and timing signals.</p></article>
+            <article class="card"><div class="card-icon" aria-hidden="true">◎</div><h3>Signal map</h3><p>A canvas view of conversation signals, linked to their source messages.</p></article>
+            <article class="card"><div class="card-icon" aria-hidden="true">☑</div><h3>Action board + timeline</h3><p>Edit task details, track progress, and review upcoming timing.</p></article>
+            <article class="card"><div class="card-icon" aria-hidden="true">⇩</div><h3>Useful outputs</h3><p>Export a Markdown brief, or create calendar entries from dates you explicitly confirm.</p></article>
+          </div>
+          <div class="quote">Lucent helps you find what to look at next. It is a catch-up assistant—not a replacement for the original conversation.</div>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Slide 4 of 6">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">L</span> lucent.</div>
+        <div class="content">
+          <div class="eyebrow">A practical workflow</div>
+          <h2>From transcript to clear next steps.</h2>
+          <div class="flow">
+            <article class="flow-step"><span class="flow-number">01</span><h3>Add a chat</h3><p>Paste text or import a supported export.</p></article>
+            <article class="flow-step"><span class="flow-number">02</span><h3>Analyze locally</h3><p>Run the rule-based scan to find likely signals.</p></article>
+            <article class="flow-step"><span class="flow-number">03</span><h3>Check the sources</h3><p>Open highlighted messages and verify context.</p></article>
+            <article class="flow-step"><span class="flow-number">04</span><h3>Refine the brief</h3><p>Edit tasks, owners, priorities, and dates as needed.</p></article>
+            <article class="flow-step"><span class="flow-number">05</span><h3>Choose what happens next</h3><p>Export, compare a follow-up, or review before saving locally.</p></article>
+          </div>
+          <p class="small-note">Demo tip: choose <strong>Guided demo</strong> in Lucent to walk through the main features with a sample conversation. The tour does not save or export anything automatically.</p>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Slide 5 of 6">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">L</span> lucent.</div>
+        <div class="content">
+          <div class="eyebrow">Advantages and responsible use</div>
+          <h2>Fast orientation, with the human still in control.</h2>
+          <div class="two-col">
+            <div>
+              <h3>Why Lucent is useful</h3>
+              <ul class="list">
+                <li><span class="check">✓</span><span>Reduces the effort of manually scanning a long transcript.</span></li>
+                <li><span class="check">✓</span><span>Keeps ordinary rule-based analysis in the browser without a hosted AI service.</span></li>
+                <li><span class="check">✓</span><span>Lets you edit, review, and choose what to save or export.</span></li>
+                <li><span class="check">✓</span><span>Supports follow-through comparisons and local search for saved chats.</span></li>
+              </ul>
+            </div>
+            <div>
+              <h3>Use it effectively</h3>
+              <ul class="list">
+                <li><span class="check">✓</span><span>Include speaker names and timestamps when available.</span></li>
+                <li><span class="check">✓</span><span>Check each suggested action against its original message and surrounding context.</span></li>
+                <li><span class="caution">!</span><span>Rule-based signals can miss nuance or flag a message incorrectly.</span></li>
+                <li><span class="caution">!</span><span>Optional browser AI depends on browser/device support and may require a model download; verify its suggestions too.</span></li>
+                <li><span class="caution">!</span><span>Only confirm dates you have checked. Local saved chats stay in this browser profile until you delete them.</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Slide 6 of 6">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">L</span> lucent.</div>
+        <div class="content">
+          <div class="eyebrow">The takeaway</div>
+          <h2>Less scrolling. More confident catch-up.</h2>
+          <p>Lucent helps people returning to a conversation quickly understand what may matter, verify it at the source, and decide what to do next.</p>
+          <div class="closing"><strong>Bring in a conversation. Find the signals. Verify the context. Keep control of what you save.</strong><br>That is a clearer way to catch up.</div>
+          <p class="small-note">For a live demonstration, open Lucent and select <strong>Guided demo</strong>. Start with the sample, then show the action board, signal map, and review-before-save flow.</p>
+        </div>
+      </section>
+    </div>
+    <nav class="controls" aria-label="Presentation controls">
+      <button class="control-button" id="previous-button" type="button">← Back</button>
+      <span class="counter" id="counter" aria-live="polite">1 / 6</span>
+      <button class="control-button" id="next-button" type="button">Next →</button>
+      <span class="small-note">Use ← → keys · Press P to print</span>
+    </nav>
+  </main>
+  <script>
+    (() => {
+      const slides = [...document.querySelectorAll(".slide")];
+      const counter = document.getElementById("counter");
+      const progress = document.getElementById("progress");
+      const previous = document.getElementById("previous-button");
+      const next = document.getElementById("next-button");
+      let current = 0;
+
+      function showSlide(index) {
+        current = Math.max(0, Math.min(index, slides.length - 1));
+        slides.forEach((slide, slideIndex) => {
+          const active = slideIndex === current;
+          slide.classList.toggle("active", active);
+          slide.setAttribute("aria-hidden", String(!active));
+        });
+        counter.textContent = (current + 1) + " / " + slides.length;
+        progress.style.width = ((current + 1) / slides.length * 100) + "%";
+        previous.disabled = current === 0;
+        next.disabled = current === slides.length - 1;
+      }
+
+      previous.addEventListener("click", () => showSlide(current - 1));
+      next.addEventListener("click", () => showSlide(current + 1));
+      document.getElementById("print-button").addEventListener("click", () => window.print());
+      document.getElementById("open-app-button").addEventListener("click", () => {
+        window.location.href = new URL("index.html", window.location.href).href;
+      });
+      document.addEventListener("keydown", event => {
+        if (event.altKey || event.ctrlKey || event.metaKey) return;
+        if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+          event.preventDefault();
+          showSlide(current + 1);
+        } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
+          event.preventDefault();
+          showSlide(current - 1);
+        } else if (event.key.toLowerCase() === "p") {
+          window.print();
+        }
+      });
+      window.addEventListener("beforeprint", () => {
+        slides.forEach(slide => slide.classList.add("active"));
+      });
+      window.addEventListener("afterprint", () => showSlide(current));
+      showSlide(0);
+    })();
+  </script>
+</body>
+</html>

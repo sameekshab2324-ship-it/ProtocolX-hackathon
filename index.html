@@ -1,0 +1,1945 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7f5">
+  <title>Lucent — Conversation clarity</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20231f;
+      --muted: #777d76;
+      --line: #e8eae6;
+      --paper: #fff;
+      --canvas: #f7f8f6;
+      --green: #256c50;
+      --green-dark: #174b37;
+      --green-pale: #eaf4ee;
+      --orange: #b9652b;
+      --orange-pale: #fff2e8;
+      --blue: #52729a;
+      --blue-pale: #edf3fa;
+      --shadow: 0 12px 36px rgba(30, 43, 34, .055);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); min-width: 320px; }
+    button, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .app-shell { min-height: 100vh; }
+    .topbar {
+      height: 70px; padding: 0 5.2%; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(255,255,255,.9); border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 17px; font-weight: 750; letter-spacing: -.5px; }
+    .brand-mark {
+      width: 34px; height: 34px; border-radius: 11px; background: var(--green); color: white;
+      display: grid; place-items: center; font-size: 18px; font-weight: 800;
+    }
+    .brand-mark svg { width: 22px; height: 22px; display: block; }
+    .brand span:last-child { color: var(--green); }
+    .topbar-right { display: flex; align-items: center; gap: 18px; color: var(--muted); font-size: 12px; }
+    .local-badge { display: flex; gap: 7px; align-items: center; padding: 8px 11px; border: 1px solid var(--line); border-radius: 20px; background: #fff; }
+    .local-dot { width: 7px; height: 7px; background: #55a879; border-radius: 50%; box-shadow: 0 0 0 3px #e6f3eb; }
+    .avatar { height: 34px; width: 34px; display: grid; place-items: center; border-radius: 50%; background: #e8e6df; color: #5e625a; font-size: 12px; font-weight: 700; }
+    main { max-width: 1160px; margin: 0 auto; padding: 48px 28px 72px; }
+    .intro { margin-bottom: 28px; }
+    .eyebrow { color: var(--green); font-size: 11px; font-weight: 750; letter-spacing: 1.5px; text-transform: uppercase; }
+    h1 { font-size: clamp(30px, 4vw, 42px); letter-spacing: -1.8px; line-height: 1.12; margin: 10px 0 9px; font-weight: 700; }
+    .intro p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .workspace { display: grid; grid-template-columns: minmax(300px, .88fr) minmax(420px, 1.12fr); align-items: start; gap: 22px; }
+    .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 15px; box-shadow: var(--shadow); }
+    .input-panel { padding: 23px; }
+    .panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 18px; }
+    h2 { margin: 0; font-size: 15px; letter-spacing: -.25px; }
+    .step-label { font-size: 10px; color: #858a83; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; }
+    .field-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 650; margin-bottom: 9px; }
+    .field-label small { color: #92968f; font-size: 10px; font-weight: 500; }
+    textarea {
+      display: block; width: 100%; min-height: 268px; resize: vertical; padding: 14px 13px;
+      border: 1px solid #e3e6e1; border-radius: 9px; background: #fcfdfb; color: var(--ink);
+      font-size: 12px; line-height: 1.65; outline: none; transition: border .15s, box-shadow .15s;
+    }
+    textarea:focus { border-color: #79a78c; box-shadow: 0 0 0 3px rgba(37,108,80,.09); }
+    textarea::placeholder { color: #a2a69f; }
+    .identity-input {
+      width: min(200px, 52vw); padding: 5px 8px; border: 1px solid #e3e6e1; border-radius: 6px;
+      background: #fff; color: var(--ink); font-size: 10px; outline: none;
+    }
+    .identity-input:focus { border-color: #79a78c; box-shadow: 0 0 0 2px rgba(37,108,80,.09); }
+    .identity-label { margin-top: 13px; }
+    .input-meta { display: flex; align-items: center; justify-content: space-between; min-height: 32px; color: #90958e; font-size: 10px; }
+    .input-tools { display: flex; align-items: center; gap: 12px; }
+    .file-input { display: none; }
+    .drop-hint { margin: 0 0 12px; padding: 9px 10px; border: 1px dashed #dfe5dd; border-radius: 7px; color: #8a9189; font-size: 10px; text-align: center; transition: background .15s, border-color .15s; }
+    .drop-hint.drag-over { background: var(--green-pale); border-color: #79a78c; color: var(--green-dark); }
+    .text-action { border: 0; background: transparent; color: var(--green); padding: 4px 0; font-size: 11px; font-weight: 650; }
+    .text-action:hover { color: var(--green-dark); text-decoration: underline; }
+    .primary-button {
+      width: 100%; display: flex; justify-content: center; align-items: center; gap: 9px; border: 0;
+      border-radius: 9px; background: var(--green); color: #fff; padding: 13px 16px; font-size: 13px; font-weight: 700;
+      transition: background .15s, transform .15s;
+    }
+    .primary-button:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .primary-button:focus-visible, .text-action:focus-visible, .filter:focus-visible, .secondary-button:focus-visible, .followup-button:focus-visible, .followthrough-control:focus-visible { outline: 3px solid #a8d0b7; outline-offset: 2px; }
+    .privacy-note { display: flex; gap: 7px; align-items: flex-start; margin-top: 14px; color: #838981; font-size: 10px; line-height: 1.5; }
+    .privacy-note strong { color: #5c665e; font-weight: 650; }
+    .results-panel { min-height: 420px; overflow: hidden; }
+    .results-top { padding: 22px 23px 0; }
+    .results-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .results-heading h2 { font-size: 16px; }
+    .updated-label { color: #90958e; font-size: 10px; white-space: nowrap; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin: 18px 0 20px; }
+    .stat { min-height: 65px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+    .stat-value { font-size: 19px; font-weight: 720; letter-spacing: -.6px; }
+    .stat-label { margin-top: 3px; color: #858a83; font-size: 10px; }
+    .signal-map { position: relative; margin: -5px 0 18px; padding: 13px 14px 10px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+    .signal-map-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+    .signal-map-title { font-size: 11px; font-weight: 750; }
+    .signal-map-caption { color: #929890; font-size: 9px; }
+    .signal-canvas-wrap { position: relative; width: 100%; }
+    #signal-canvas { display: block; width: 100%; height: 118px; }
+    .signal-legend { display: flex; flex-wrap: wrap; gap: 8px 13px; margin-top: 4px; color: #747b74; font-size: 9px; }
+    .legend-item { display: inline-flex; align-items: center; gap: 5px; }
+    .legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .canvas-tooltip { position: absolute; z-index: 2; max-width: 230px; padding: 7px 9px; border: 1px solid #e4e9e3; border-radius: 7px; background: #fff; box-shadow: 0 5px 18px rgba(30,43,34,.12); color: #515a52; font-size: 9px; line-height: 1.45; pointer-events: none; }
+    .canvas-tooltip[hidden] { display: none; }
+    .brief {
+      padding: 15px 16px; border-radius: 10px; background: #f1f6f2; border: 1px solid #e4eee6; margin-bottom: 20px;
+    }
+    .brief-title { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: var(--green-dark); font-size: 11px; font-weight: 750; letter-spacing: .2px; }
+    .brief p { margin: 0; color: #505b52; font-size: 12px; line-height: 1.65; }
+    .brief-empty { color: #68756b !important; }
+    .results-actions { display: flex; align-items: center; gap: 8px; }
+    .secondary-button { border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; background: #fff; color: #5b665d; font-size: 10px; font-weight: 650; }
+    .secondary-button:hover:not(:disabled) { background: #f5f8f5; border-color: #d7e3d9; }
+    .secondary-button:disabled { cursor: not-allowed; opacity: .45; }
+    .action-board { margin: 0 0 18px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+    .action-board-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 9px; }
+    .action-board-title { font-size: 11px; font-weight: 750; }
+    .action-progress { color: #868d85; font-size: 9px; }
+    .followthrough { margin: 0 0 18px; padding: 14px; border: 1px solid #e4eaf2; border-radius: 9px; background: #f7f9fc; }
+    .followthrough-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+    .followthrough-title { color: #385a7f; font-size: 11px; font-weight: 750; }
+    .followthrough-caption { color: #818a94; font-size: 9px; line-height: 1.5; margin-top: 3px; }
+    .followthrough-item { padding: 10px 0; border-top: 1px solid #e9edf2; }
+    .followthrough-item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .followthrough-task { color: #4b555f; font-size: 10px; line-height: 1.5; }
+    .followthrough-status { flex: 0 0 auto; color: #6e7782; font-size: 9px; font-weight: 700; }
+    .followthrough-status.done { color: #276c4e; }
+    .followthrough-status.mentioned { color: #a35d26; }
+    .followthrough-match { margin-top: 5px; color: #858d96; font-size: 9px; line-height: 1.45; }
+    .followthrough-control { margin-top: 6px; border: 0; padding: 3px 0; background: transparent; color: #4f7095; font-size: 9px; font-weight: 650; }
+    .followthrough-control:hover { text-decoration: underline; }
+    .input-actions { display: flex; flex-direction: column; gap: 8px; }
+    .followup-button { width: 100%; border: 1px solid #dce5de; border-radius: 8px; background: #fff; padding: 10px 12px; color: var(--green-dark); font-size: 11px; font-weight: 700; }
+    .followup-button:hover:not(:disabled) { border-color: #9dbba6; background: #f6faf7; }
+    .followup-button:disabled { cursor: not-allowed; opacity: .45; }
+    .ai-tools { margin-top: 12px; padding: 12px; border: 1px solid #e6e9e5; border-radius: 9px; background: linear-gradient(135deg, #fbfcfa, #f5f8f5); }
+    .ai-tools-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 7px; }
+    .ai-tools-title { color: #314d3d; font-size: 10px; font-weight: 750; }
+    .ai-tools-status { min-height: 28px; color: #7e877e; font-size: 9px; line-height: 1.5; }
+    .ai-tools-actions { display: flex; gap: 7px; }
+    .ai-tools-actions .secondary-button { flex: 1; }
+    .ai-summary { margin: 0 0 18px; padding: 14px 15px; border: 1px solid #e0e9e2; border-radius: 9px; background: #f5faf6; }
+    .ai-summary[hidden] { display: none; }
+    .ai-summary-title { margin-bottom: 6px; color: #315440; font-size: 10px; font-weight: 750; }
+    .ai-summary-text { margin: 0; color: #4f5e52; font-size: 11px; line-height: 1.6; white-space: pre-wrap; }
+    .ai-summary-caption { margin-top: 7px; color: #899189; font-size: 9px; }
+    .review-ai-label { color: #536f59; font-weight: 700; }
+    .tour-target { position: relative; z-index: 25; outline: 3px solid #67a27b !important; outline-offset: 4px; box-shadow: 0 0 0 8px rgba(103, 162, 123, .15); }
+    .guided-tour { position: fixed; z-index: 100; right: 20px; bottom: 20px; width: min(370px, calc(100vw - 32px)); padding: 18px; border: 1px solid #dce7de; border-radius: 13px; background: #fff; box-shadow: 0 16px 48px rgba(25, 44, 31, .2); }
+    .guided-tour[hidden] { display: none; }
+    .guided-tour-kicker { color: var(--green); font-size: 9px; font-weight: 750; letter-spacing: 1px; text-transform: uppercase; }
+    .guided-tour h2 { margin: 6px 0; font-size: 15px; }
+    .guided-tour p { margin: 0; color: #667068; font-size: 11px; line-height: 1.6; }
+    .guided-tour-controls { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 14px; }
+    .guided-tour-nav { display: flex; gap: 7px; }
+    .guided-tour .secondary-button, .guided-tour .primary-button { width: auto; min-height: 32px; padding: 7px 10px; }
+    .guided-tour .primary-button { font-size: 10px; }
+    .guided-tour-step { color: #878f87; font-size: 9px; }
+    .task-row { display: flex; align-items: flex-start; gap: 9px; padding: 8px 0; border-top: 1px solid #f0f1ee; }
+    .task-row input { flex: 0 0 auto; margin: 2px 0 0; accent-color: var(--green); }
+    .task-copy { min-width: 0; color: #535c54; font-size: 10px; line-height: 1.5; }
+    .task-row.done .task-main-text { color: #9ba19a; text-decoration: line-through; }
+    .task-meta { display: block; color: #969b95; font-size: 9px; margin-top: 2px; }
+    .task-edit { width: 100%; margin-top: 8px; padding: 8px; border: 1px solid #edf0ec; border-radius: 7px; background: #fbfcfa; }
+    .task-edit summary { color: #637066; cursor: pointer; font-size: 9px; font-weight: 650; }
+    .task-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding-top: 8px; }
+    .task-edit-grid label { display: grid; gap: 4px; color: #858c84; font-size: 9px; }
+    .task-edit-grid label:first-child { grid-column: 1 / -1; }
+    .task-edit-grid input, .task-edit-grid select { width: 100%; min-width: 0; padding: 6px; border: 1px solid #e2e7e0; border-radius: 5px; background: #fff; color: var(--ink); font: inherit; font-size: 10px; }
+    .calendar-date-label { grid-column: 1 / -1; }
+    .action-board-tools { display: flex; align-items: center; gap: 8px; }
+    .calendar-note { margin-top: 8px; color: #929890; font-size: 9px; line-height: 1.45; }
+    .deadline-timeline { margin: 0 0 18px; padding: 13px 14px; border: 1px solid #e8e4da; border-radius: 9px; background: #fffdf9; }
+    .timeline-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .timeline-title { font-size: 11px; font-weight: 750; }
+    .timeline-caption { color: #929087; font-size: 9px; }
+    .timeline-group { margin-top: 10px; }
+    .timeline-group-title { padding-bottom: 5px; color: #827b69; font-size: 9px; font-weight: 750; letter-spacing: .6px; text-transform: uppercase; }
+    .timeline-entry { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 8px 0; border-top: 1px solid #f1eee8; }
+    .timeline-marker { width: 7px; height: 7px; margin-top: 4px; border-radius: 50%; background: #c9793e; }
+    .timeline-marker.action { background: var(--green); }
+    .timeline-copy { min-width: 0; color: #586058; font-size: 10px; line-height: 1.45; overflow-wrap: anywhere; }
+    .timeline-owner { display: block; margin-top: 3px; color: #93988f; font-size: 9px; }
+    .timeline-due { color: #7d786c; font-size: 9px; white-space: nowrap; }
+    .library-panel { margin-top: 22px; padding: 20px 22px; }
+    .library-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
+    .library-title { font-size: 14px; font-weight: 750; }
+    .library-caption { margin-top: 4px; color: #858c84; font-size: 10px; line-height: 1.5; }
+    .library-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .library-search { flex: 1; min-width: 0; padding: 9px 11px; border: 1px solid #e3e6e1; border-radius: 8px; color: var(--ink); font: inherit; font-size: 11px; outline: none; }
+    .library-search:focus { border-color: #79a78c; box-shadow: 0 0 0 3px rgba(37,108,80,.09); }
+    .library-list { display: grid; gap: 8px; }
+    .library-item { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; padding: 12px; border: 1px solid #eceeea; border-radius: 9px; background: #fff; }
+    .library-item-main { min-width: 0; }
+    .library-item-title { color: #343a34; font-size: 11px; font-weight: 700; overflow-wrap: anywhere; }
+    .library-item-meta { margin-top: 4px; color: #929890; font-size: 9px; }
+    .library-item-summary { margin-top: 7px; color: #636b63; font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; }
+    .library-item-actions { display: flex; flex: 0 0 auto; gap: 7px; }
+    .library-status { min-height: 15px; margin-top: 8px; color: #858c84; font-size: 9px; }
+    .library-empty { padding: 22px 12px; border: 1px dashed #e4e8e2; border-radius: 8px; color: #858c84; font-size: 10px; text-align: center; }
+    .review-dialog { width: min(680px, calc(100% - 28px)); max-height: min(82vh, 780px); padding: 0; border: 1px solid var(--line); border-radius: 14px; background: #fff; color: var(--ink); box-shadow: 0 24px 80px rgba(23,40,29,.22); }
+    .review-dialog::backdrop { background: rgba(26,35,29,.42); backdrop-filter: blur(3px); }
+    .review-content { padding: 22px; }
+    .review-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
+    .review-title { margin: 0; font-size: 18px; letter-spacing: -.4px; }
+    .review-description { margin: 7px 0 15px; color: #747d75; font-size: 11px; line-height: 1.55; }
+    .review-list { display: grid; gap: 9px; max-height: 52vh; overflow: auto; padding: 1px 3px 4px 1px; }
+    .review-empty { padding: 18px 12px; border: 1px dashed #e2e7e1; border-radius: 8px; color: #737d74; font-size: 11px; line-height: 1.5; }
+    .review-card { padding: 12px; border: 1px solid #e8ebe6; border-radius: 9px; background: #fff; }
+    .review-card.excluded { opacity: .62; background: #fafbf9; }
+    .review-card-top { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+    .review-card-top input[type="checkbox"] { accent-color: var(--green); }
+    .review-type { width: auto; min-width: 105px; padding: 5px 7px; border: 1px solid #e2e7e0; border-radius: 6px; background: #fff; color: #465047; font-size: 10px; }
+    .review-source { margin-left: auto; color: #929890; font-size: 9px; }
+    .review-text, .review-owner, .review-due, .review-priority { width: 100%; padding: 8px; border: 1px solid #e2e7e0; border-radius: 6px; background: #fff; color: var(--ink); font: inherit; font-size: 10px; }
+    .review-text { min-height: 58px; resize: vertical; line-height: 1.45; }
+    .review-fields { display: grid; grid-template-columns: 1fr 1fr 115px; gap: 7px; margin-top: 8px; }
+    .review-fields[hidden] { display: none; }
+    .review-fields label { display: grid; gap: 4px; color: #858c84; font-size: 9px; }
+    .review-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 14px; }
+    .review-dialog :focus-visible { outline: 3px solid #a8d0b7; outline-offset: 2px; }
+    @media (max-width: 520px) {
+      .review-content { padding: 17px; }
+      .review-fields { grid-template-columns: 1fr 1fr; }
+      .review-fields label:first-child, .review-fields .calendar-date-label { grid-column: 1 / -1; }
+    }
+    .signal-note { color: #929890; font-size: 9px; margin-top: 9px; }
+    .message-section { border-top: 1px solid var(--line); }
+    .filter-row { display: flex; align-items: center; gap: 6px; padding: 13px 20px 10px; overflow-x: auto; }
+    .filter {
+      border: 1px solid transparent; border-radius: 20px; padding: 6px 10px; white-space: nowrap;
+      background: transparent; color: #777d76; font-size: 10px; font-weight: 600;
+    }
+    .filter:hover { background: #f5f7f4; }
+    .filter.active { background: #edf5ef; border-color: #e0ece3; color: var(--green-dark); }
+    .message-list { padding: 0 20px 10px; }
+    .message-card { padding: 13px 0; border-bottom: 1px solid #eff0ed; }
+    .message-card:last-child { border-bottom: 0; }
+    .message-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+    .sender-wrap { display: flex; align-items: center; gap: 7px; min-width: 0; }
+    .sender { font-size: 11px; font-weight: 700; }
+    .message-time { color: #a0a49e; font-size: 10px; white-space: nowrap; }
+    .message-body { margin: 0; color: #59605a; font-size: 11px; line-height: 1.55; overflow-wrap: anywhere; }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .tag { padding: 4px 7px; border-radius: 5px; font-size: 9px; font-weight: 700; }
+    .tag-urgent { color: #a44f1f; background: var(--orange-pale); }
+    .tag-action { color: #276c4e; background: var(--green-pale); }
+    .tag-decision { color: #4d6d95; background: var(--blue-pale); }
+    .tag-mention { color: #745e99; background: #f3eff9; }
+    .empty-state { padding: 32px 18px 38px; text-align: center; color: #898e87; font-size: 11px; line-height: 1.6; }
+    .empty-icon { width: 38px; height: 38px; display: grid; place-items: center; margin: 0 auto 11px; border-radius: 12px; background: #f2f5f1; color: var(--green); font-size: 17px; }
+    .footer-note { margin-top: 15px; text-align: center; color: #a1a59f; font-size: 10px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    @media (max-width: 800px) {
+      main { padding-top: 35px; }
+      .workspace { grid-template-columns: 1fr; }
+      textarea { min-height: 220px; }
+    }
+    @media (max-width: 520px) {
+      .topbar { height: 60px; padding: 0 18px; }
+      .topbar-right { gap: 10px; }
+      .local-badge { padding: 7px 9px; font-size: 10px; }
+      main { padding: 30px 15px 44px; }
+      .input-panel { padding: 18px; }
+      .library-panel { padding: 17px; }
+      .results-top { padding-left: 17px; padding-right: 17px; }
+      .filter-row { padding-left: 14px; padding-right: 14px; }
+      .message-list { padding-left: 16px; padding-right: 16px; }
+      .stats { gap: 6px; }
+      .stat { padding: 10px 8px; }
+      .stat-label { font-size: 9px; }
+      .library-item { flex-direction: column; }
+      .library-item-actions { width: 100%; }
+      .library-item-actions button { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand" aria-label="Lucent home">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6.5 4.5v15h10" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="m18.5 4 .8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z" fill="#CBE9D3"/>
+          </svg>
+        </div>
+        <span>lucent<span>.</span></span>
+      </div>
+      <div class="topbar-right">
+        <div class="local-badge"><span class="local-dot" aria-hidden="true"></span>Private by design</div>
+        <div class="avatar" aria-label="Your profile">SA</div>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro">
+        <div class="eyebrow">Lucent · conversation clarity</div>
+        <h1>What did you miss?</h1>
+        <p>Drop in a conversation. Get the decisions, deadlines, and things that need you — without the scroll.</p>
+      </section>
+
+      <section class="workspace" aria-label="Conversation catch-up app">
+        <div class="panel input-panel">
+          <div class="panel-heading">
+            <h2>Paste a conversation</h2>
+            <span class="step-label">01 / INPUT</span>
+          </div>
+          <label class="field-label" for="conversation">Chat transcript <small>Names and timestamps help</small></label>
+          <textarea id="conversation" spellcheck="false" aria-describedby="input-meta privacy-note" placeholder="[10:04] Maya: Quick update on the launch...
+[10:06] You: I can review the final draft.
+[10:08] Leo: Let's ship the new version Friday."></textarea>
+          <label class="field-label identity-label" for="identity">Highlight for <input class="identity-input" id="identity" type="text" value="sameekshab2324-ship-it" aria-label="Your name or handle"></label>
+          <div class="drop-hint" id="drop-hint">Or drop a .txt, .csv, or Slack/Discord .json export here</div>
+          <div class="input-meta" id="input-meta">
+            <span id="line-count">0 messages</span>
+            <div class="input-tools">
+              <input class="file-input" id="file-input" type="file" accept=".txt,.csv,.json,text/plain,text/csv,application/json">
+              <button class="text-action" id="upload-button" type="button">Import file</button>
+              <button class="text-action" id="demo-button" type="button">Try sample</button>
+              <button class="text-action" id="guided-demo-button" type="button">Guided demo</button>
+            </div>
+          </div>
+          <div class="input-actions">
+            <button class="primary-button" id="analyze-button" type="button">
+              <span aria-hidden="true">✦</span> Find what matters
+            </button>
+            <button class="followup-button" id="followup-button" type="button" disabled>Track follow-through</button>
+          </div>
+          <div class="ai-tools" aria-label="On-device AI assistance">
+            <div class="ai-tools-head">
+              <span class="ai-tools-title">On-device AI</span>
+              <span class="local-badge"><span class="local-dot" aria-hidden="true"></span>No cloud</span>
+            </div>
+            <div class="ai-tools-status" id="ai-status" role="status">Checking browser AI support…</div>
+            <div class="ai-tools-actions">
+              <button class="secondary-button" id="ai-enable-button" type="button">Prepare local AI</button>
+              <button class="secondary-button" id="ai-analyze-button" type="button" disabled>AI summary + findings</button>
+            </div>
+          </div>
+          <div class="privacy-note" id="privacy-note">
+            <span aria-hidden="true">◈</span>
+            <span><strong>Local-first.</strong> Analysis stays in this browser. The optional browser AI model may need a one-time download; chats are never sent to a cloud service. Saved findings require your confirmation.</span>
+          </div>
+        </div>
+
+        <div class="panel results-panel" aria-live="polite">
+          <div class="results-top">
+            <div class="results-heading">
+              <h2>Your catch-up</h2>
+              <div class="results-actions">
+                <span class="updated-label" id="updated-label">Waiting for a conversation</span>
+                <button class="secondary-button" id="save-library-button" type="button" disabled>Save to library</button>
+                <button class="secondary-button" id="export-button" type="button" disabled>Export brief</button>
+              </div>
+            </div>
+            <div class="stats" aria-label="Conversation highlights">
+              <div class="stat"><div class="stat-value" id="stat-messages">—</div><div class="stat-label">messages scanned</div></div>
+              <div class="stat"><div class="stat-value" id="stat-actions">—</div><div class="stat-label">things for you</div></div>
+              <div class="stat"><div class="stat-value" id="stat-decisions">—</div><div class="stat-label">decisions</div></div>
+            </div>
+            <div class="signal-map">
+              <div class="signal-map-head">
+                <span class="signal-map-title">Conversation signal map</span>
+                <span class="signal-map-caption">Select a dot to inspect a message</span>
+              </div>
+              <div class="signal-canvas-wrap" id="signal-canvas-wrap">
+                <canvas id="signal-canvas" role="img" aria-label="Conversation signal map. Analyze a transcript to view message signals."></canvas>
+                <div class="canvas-tooltip" id="canvas-tooltip" role="status" hidden></div>
+              </div>
+              <div class="signal-legend" aria-label="Signal map legend">
+                <span class="legend-item"><i class="legend-dot" style="background:#256c50"></i>Action</span>
+                <span class="legend-item"><i class="legend-dot" style="background:#52729a"></i>Decision</span>
+                <span class="legend-item"><i class="legend-dot" style="background:#8469a8"></i>Mention</span>
+                <span class="legend-item"><i class="legend-dot" style="background:#c9793e"></i>Urgent</span>
+              </div>
+            </div>
+            <div class="brief">
+              <div class="brief-title"><span aria-hidden="true">✦</span> THE SHORT VERSION</div>
+              <p class="brief-empty" id="brief">Paste a conversation and select <strong>Find what matters</strong> to get your personal catch-up.</p>
+            </div>
+            <div class="ai-summary" id="ai-summary" hidden>
+              <div class="ai-summary-title">ON-DEVICE AI BRIEF</div>
+              <p class="ai-summary-text" id="ai-summary-text"></p>
+              <div class="ai-summary-caption">Generated on this device. Verify suggested actions and deadlines.</div>
+            </div>
+            <div class="action-board" id="action-board" hidden></div>
+            <div class="deadline-timeline" id="deadline-timeline" hidden></div>
+            <div class="followthrough" id="followthrough" hidden></div>
+            <div class="signal-note" id="signal-note" hidden>Highlights are detected with transparent, on-device rules — verify important dates and assignments.</div>
+          </div>
+          <div class="message-section">
+            <div class="filter-row" role="tablist" aria-label="Filter highlights">
+              <button class="filter active" type="button" role="tab" aria-selected="true" data-filter="all">All highlights</button>
+              <button class="filter" type="button" role="tab" aria-selected="false" data-filter="action">Needs you</button>
+              <button class="filter" type="button" role="tab" aria-selected="false" data-filter="decision">Decisions</button>
+              <button class="filter" type="button" role="tab" aria-selected="false" data-filter="mention">Mentions</button>
+              <button class="filter" type="button" role="tab" aria-selected="false" data-filter="urgent">Time-sensitive</button>
+            </div>
+            <div class="message-list" id="message-list">
+              <div class="empty-state">
+                <div class="empty-icon" aria-hidden="true">↗</div>
+                Your important messages will show up here, ranked by urgency.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="panel library-panel" aria-labelledby="library-title">
+        <div class="library-head">
+          <div>
+            <div class="library-title" id="library-title">Your local library</div>
+            <div class="library-caption">Only chats you explicitly save appear here. Search messages, decisions, and action items; delete entries any time.</div>
+          </div>
+          <button class="secondary-button" id="clear-library-button" type="button" disabled>Delete all</button>
+        </div>
+        <div class="library-controls">
+          <label class="sr-only" for="library-search">Search saved conversations</label>
+          <input class="library-search" id="library-search" type="search" placeholder="Search saved chats, decisions, and actions…" autocomplete="off">
+        </div>
+        <div class="library-list" id="library-list" aria-live="polite">
+          <div class="library-empty">Loading local library…</div>
+        </div>
+        <div class="library-status" id="library-status" role="status"></div>
+      </section>
+      <dialog class="review-dialog" id="review-dialog" aria-labelledby="review-title">
+        <form class="review-content">
+          <div class="review-header">
+            <h2 class="review-title" id="review-title">Review before saving</h2>
+            <button class="secondary-button" id="review-close" type="button" aria-label="Close review">Close</button>
+          </div>
+          <p class="review-description">Confirm, edit, or exclude detected actions and decisions. Your original transcript is saved as supplied; only included findings are added to the library’s searchable fields.</p>
+          <div class="review-list" id="review-list"></div>
+          <div class="review-actions">
+            <button class="secondary-button" id="review-cancel" type="button">Cancel</button>
+            <button class="primary-button" id="review-confirm" type="button" style="width:auto">Save reviewed chat</button>
+          </div>
+        </form>
+      </dialog>
+      <aside class="guided-tour" id="guided-tour" role="region" aria-labelledby="guided-tour-title" aria-live="polite" hidden>
+        <div class="guided-tour-kicker">Lucent guided demo</div>
+        <h2 id="guided-tour-title"></h2>
+        <p id="guided-tour-description"></p>
+        <div class="guided-tour-controls">
+          <span class="guided-tour-step" id="guided-tour-step"></span>
+          <div class="guided-tour-nav">
+            <button class="secondary-button" id="guided-tour-exit" type="button">Exit</button>
+            <button class="secondary-button" id="guided-tour-previous" type="button">Back</button>
+            <button class="primary-button" id="guided-tour-next" type="button">Next</button>
+          </div>
+        </div>
+      </aside>
+      <div class="footer-note">Lucent — clarity, after the conversation.</div>
+    </main>
+  </div>
+
+  <script>
+    (() => {
+      const sampleConversation = `[9:12 AM] Maya: Morning team! Quick update before everyone catches up.
+[9:14 AM] Jordan: The client moved the launch review to Thursday at 2 PM. We need the final deck by Wednesday EOD.
+[9:16 AM] Maya: @sameekshab2324-ship-it can you review the onboarding slides today? Please send edits by 4 PM so I can fold them in.
+[9:18 AM] Leo: I finished the pricing page QA. Found one broken link, fixing it now.
+[9:21 AM] Jordan: Decision: we're going with the simplified signup flow for launch. The extra profile fields can wait for v2.
+[9:24 AM] Maya: Agreed. I'll update the spec and share it this afternoon.
+[9:27 AM] Sam: I can own the customer email draft. @sameekshab2324-ship-it, please approve the subject line before we send it tomorrow.
+[9:31 AM] Jordan: Important: legal still needs to approve the new terms. If we don't hear back by noon tomorrow, flag me ASAP.
+[9:34 AM] Leo: All set on my side. The fix is live.
+[9:38 AM] Maya: Thanks! @sameekshab2324-ship-it, your two things are the slide review today and the email subject line tomorrow.`;
+
+      const input = document.getElementById("conversation");
+      const identityInput = document.getElementById("identity");
+      const lineCount = document.getElementById("line-count");
+      const list = document.getElementById("message-list");
+      const brief = document.getElementById("brief");
+      const updated = document.getElementById("updated-label");
+      const filters = [...document.querySelectorAll(".filter")];
+      const fileInput = document.getElementById("file-input");
+      const dropHint = document.getElementById("drop-hint");
+      const actionBoard = document.getElementById("action-board");
+      const deadlineTimeline = document.getElementById("deadline-timeline");
+      const followthrough = document.getElementById("followthrough");
+      const exportButton = document.getElementById("export-button");
+      const followupButton = document.getElementById("followup-button");
+      const analyzeButton = document.getElementById("analyze-button");
+      const saveLibraryButton = document.getElementById("save-library-button");
+      const clearLibraryButton = document.getElementById("clear-library-button");
+      const librarySearch = document.getElementById("library-search");
+      const libraryList = document.getElementById("library-list");
+      const libraryStatus = document.getElementById("library-status");
+      const reviewDialog = document.getElementById("review-dialog");
+      const reviewList = document.getElementById("review-list");
+      const reviewConfirm = document.getElementById("review-confirm");
+      const aiStatus = document.getElementById("ai-status");
+      const aiEnableButton = document.getElementById("ai-enable-button");
+      const aiAnalyzeButton = document.getElementById("ai-analyze-button");
+      const aiSummary = document.getElementById("ai-summary");
+      const aiSummaryText = document.getElementById("ai-summary-text");
+      const guidedTour = document.getElementById("guided-tour");
+      const guidedTourTitle = document.getElementById("guided-tour-title");
+      const guidedTourDescription = document.getElementById("guided-tour-description");
+      const guidedTourStepLabel = document.getElementById("guided-tour-step");
+      const guidedTourPrevious = document.getElementById("guided-tour-previous");
+      const guidedTourNext = document.getElementById("guided-tour-next");
+      const inputHeading = document.querySelector(".input-panel .panel-heading h2");
+      const signalCanvas = document.getElementById("signal-canvas");
+      const signalCanvasWrap = document.getElementById("signal-canvas-wrap");
+      const canvasTooltip = document.getElementById("canvas-tooltip");
+      let analyzedMessages = [];
+      let activeFilter = "all";
+      let lastAnalyzedInput = "";
+      let completedTasks = new Set();
+      let taskEdits = new Map();
+      let baselineTasks = [];
+      let followUpResults = [];
+      let followUpMode = false;
+      let followUpOverrides = new Map();
+      let libraryDatabase = null;
+      let libraryRecords = [];
+      let loadedLibraryId = null;
+      let reviewFindings = [];
+      let localAISession = null;
+      let aiFindings = [];
+      let aiSummaryValue = "";
+      let aiBusy = false;
+      let guidedTourSteps = [];
+      let guidedTourIndex = 0;
+      let guidedTourFocus = null;
+
+      const actionPattern = /\b(can you|could you|please|need you to|your (?:task|action|part|turn)|you(?:'ll| will) need to|follow[- ]up with|send (?:me|us|the)|review the|approve the|make sure you|don't forget|do you mind)\b/i;
+      const decisionPattern = /\b(decision|decided|agreed|approved|going with|we(?:'re| are) (?:choosing|using|shipping)|final(?:ly)? (?:plan|call|choice)|locked in|will ship)\b/i;
+      const urgentPattern = /\b(urgent|asap|immediately|eod|today|tonight|tomorrow|by (?:\w+day|noon|[0-9]{1,2}(?::[0-9]{2})?\s?(?:am|pm))|deadline|due (?:today|tomorrow|by)|before (?:the )?(?:launch|meeting|review))\b/i;
+      const taskPattern = /\b(i can|i'll|i will|own(?:ing)?|action item|i'm on it|fixing it|will (?:update|send|review|share|draft|handle|finish|take))\b/i;
+      const signalLanes = [
+        { key: "action", label: "Action", color: "#256c50", y: 25 },
+        { key: "decision", label: "Decision", color: "#52729a", y: 46 },
+        { key: "mention", label: "Mention", color: "#8469a8", y: 67 },
+        { key: "urgent", label: "Urgent", color: "#c9793e", y: 88 }
+      ];
+      let canvasPoints = [];
+
+      function drawSignalMap() {
+        const context = signalCanvas.getContext("2d");
+        if (!context) return;
+        const rect = signalCanvas.getBoundingClientRect();
+        if (!rect.width) return;
+        const ratio = window.devicePixelRatio || 1;
+        signalCanvas.width = Math.round(rect.width * ratio);
+        signalCanvas.height = Math.round(rect.height * ratio);
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        context.clearRect(0, 0, rect.width, rect.height);
+        const left = 57;
+        const right = rect.width - 10;
+        const plotWidth = Math.max(0, right - left);
+        canvasPoints = [];
+
+        context.font = "9px Inter, system-ui, sans-serif";
+        context.textBaseline = "middle";
+        signalLanes.forEach(lane => {
+          context.strokeStyle = "#eef0ed";
+          context.lineWidth = 1;
+          context.beginPath();
+          context.moveTo(left, lane.y);
+          context.lineTo(right, lane.y);
+          context.stroke();
+          context.fillStyle = "#8a9089";
+          context.textAlign = "left";
+          context.fillText(lane.label, 0, lane.y);
+        });
+        context.strokeStyle = "#e4e8e3";
+        context.beginPath();
+        context.moveTo(left, 106);
+        context.lineTo(right, 106);
+        context.stroke();
+        context.fillStyle = "#929890";
+        context.textBaseline = "top";
+        context.fillText("START", left, 108);
+        context.textAlign = "right";
+        context.fillText("END", right, 108);
+
+        if (!analyzedMessages.length) {
+          signalCanvas.setAttribute("aria-label", "Conversation signal map. Analyze a transcript to view message signals.");
+          return;
+        }
+        const divisor = Math.max(1, analyzedMessages.length - 1);
+        analyzedMessages.forEach((message, index) => {
+          const x = left + plotWidth * index / divisor;
+          signalLanes.forEach(lane => {
+            const isSignal = lane.key === "action"
+              ? message.action && message.mention
+              : message[lane.key];
+            if (!isSignal) return;
+            canvasPoints.push({ x, y: lane.y, message, lane });
+            context.beginPath();
+            context.fillStyle = lane.color;
+            context.arc(x, lane.y, 4, 0, Math.PI * 2);
+            context.fill();
+            context.strokeStyle = "#fff";
+            context.lineWidth = 1.5;
+            context.stroke();
+          });
+        });
+        signalCanvas.setAttribute("aria-label",
+          "Conversation signal map for " + analyzedMessages.length + " messages. " +
+          signalLanes.map(lane => lane.label + ": " + canvasPoints.filter(point => point.lane === lane).length).join(", ") +
+          ". Select a dot to inspect its message.");
+      }
+
+      function nearestCanvasPoint(event) {
+        const rect = signalCanvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        let nearest = null;
+        let distance = 13;
+        canvasPoints.forEach(point => {
+          const nextDistance = Math.hypot(point.x - x, point.y - y);
+          if (nextDistance < distance) {
+            nearest = point;
+            distance = nextDistance;
+          }
+        });
+        return nearest;
+      }
+
+      signalCanvas.addEventListener("pointermove", event => {
+        const point = nearestCanvasPoint(event);
+        if (!point) {
+          canvasTooltip.hidden = true;
+          signalCanvas.style.cursor = "default";
+          return;
+        }
+        canvasTooltip.textContent = point.lane.label + " · " + point.message.author + ": " + point.message.text;
+        canvasTooltip.hidden = false;
+        const wrapRect = signalCanvasWrap.getBoundingClientRect();
+        const canvasRect = signalCanvas.getBoundingClientRect();
+        canvasTooltip.style.left = Math.min(
+          Math.max(0, point.x + 9),
+          Math.max(0, wrapRect.width - 240)
+        ) + "px";
+        canvasTooltip.style.top = Math.max(0, canvasRect.top - wrapRect.top + point.y - 22) + "px";
+        signalCanvas.style.cursor = "pointer";
+      });
+      signalCanvas.addEventListener("pointerleave", () => {
+        canvasTooltip.hidden = true;
+        signalCanvas.style.cursor = "default";
+      });
+      signalCanvas.addEventListener("click", event => {
+        const point = nearestCanvasPoint(event);
+        if (!point) return;
+        const card = list.querySelector(`[data-message-index="${point.message.index}"]`);
+        if (card) {
+          card.scrollIntoView({ behavior: "smooth", block: "center" });
+          card.focus({ preventScroll: true });
+        }
+      });
+      window.addEventListener("resize", drawSignalMap);
+
+      function escapeRegex(value) {
+        return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      }
+
+      function parseLine(line, index) {
+        const trimmed = line.trim();
+        if (!trimmed) return null;
+        const timestampMatch = trimmed.match(/^\[([^\]]+)\]\s*/);
+        const time = timestampMatch ? timestampMatch[1] : "";
+        const body = timestampMatch ? trimmed.slice(timestampMatch[0].length) : trimmed;
+        const authorMatch = body.match(/^([^:\n]{1,45}):\s*(.*)$/);
+        const author = authorMatch ? authorMatch[1].trim() : "Message " + (index + 1);
+        const text = authorMatch ? authorMatch[2].trim() : body;
+        const action = actionPattern.test(text);
+        const decision = decisionPattern.test(text);
+        const urgent = urgentPattern.test(text);
+        const identity = identityInput.value.trim().replace(/^@/, "");
+        const namedForUser = identity && new RegExp("(^|[^\\w])@?" + escapeRegex(identity) + "(?!\\w)", "i").test(text);
+        const mention = Boolean(namedForUser || /\b(?:you|your)\b/i.test(text));
+        const ownTask = taskPattern.test(text);
+        let score = (urgent ? 4 : 0) + (action ? 3 : 0) + (mention ? 2 : 0) + (decision ? 1 : 0);
+        if (ownTask) score += 1;
+        return { author, time, text, action, decision, urgent, mention, ownTask, score, index };
+      }
+
+      function escapeHtml(value) {
+        return value.replace(/[&<>"']/g, char => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        })[char]);
+      }
+
+      function openLocalLibrary() {
+        return new Promise((resolve, reject) => {
+          if (!("indexedDB" in window)) {
+            reject(new Error("This browser does not support the local conversation library."));
+            return;
+          }
+          const request = indexedDB.open("lucent-local-library", 1);
+          request.onupgradeneeded = () => {
+            const database = request.result;
+            if (!database.objectStoreNames.contains("conversations")) {
+              database.createObjectStore("conversations", { keyPath: "id" });
+            }
+          };
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error || new Error("Could not open the local library."));
+          request.onblocked = () => reject(new Error("The local library is busy in another tab. Close older Lucent tabs and retry."));
+        });
+      }
+
+      function libraryRequest(mode, operation) {
+        return new Promise((resolve, reject) => {
+          if (!libraryDatabase) {
+            reject(new Error("The local library is not available."));
+            return;
+          }
+          const transaction = libraryDatabase.transaction("conversations", mode);
+          const request = operation(transaction.objectStore("conversations"));
+          let result;
+          request.onsuccess = () => { result = request.result; };
+          request.onerror = () => reject(request.error || new Error("The local library request failed."));
+          transaction.oncomplete = () => resolve(result);
+          transaction.onabort = () => reject(transaction.error || new Error("The local library transaction was cancelled."));
+        });
+      }
+
+      async function refreshLibrary() {
+        libraryRecords = await libraryRequest("readonly", store => store.getAll());
+        libraryRecords.sort((a, b) => b.savedAt - a.savedAt);
+        clearLibraryButton.disabled = libraryRecords.length === 0;
+        renderLibrary();
+      }
+
+      function renderLibrary() {
+        const query = librarySearch.value.trim().toLowerCase();
+        const filtered = libraryRecords.filter(record => {
+          const searchable = [
+            record.title,
+            record.transcript,
+            record.summary,
+            record.identity,
+            ...(record.actions || []).flatMap(action => [action.text, action.owner, action.due]),
+            ...(record.decisions || [])
+          ].join(" ").toLowerCase();
+          return !query || searchable.includes(query);
+        });
+        if (!libraryRecords.length) {
+          libraryList.innerHTML = '<div class="library-empty">No saved conversations yet. Analyze a chat, then choose “Review & save” to keep it on this device.</div>';
+          clearLibraryButton.disabled = true;
+          return;
+        }
+        if (!filtered.length) {
+          libraryList.innerHTML = '<div class="library-empty">No saved chats match that search.</div>';
+          clearLibraryButton.disabled = false;
+          return;
+        }
+        libraryList.innerHTML = filtered.map(record => {
+          const date = new Date(record.savedAt);
+          const formattedDate = Number.isNaN(date.getTime()) ? "Saved locally" : date.toLocaleString();
+          const actionCount = (record.actions || []).length;
+          const decisionCount = (record.decisions || []).length;
+          return `<article class="library-item">
+            <div class="library-item-main">
+              <div class="library-item-title">${escapeHtml(record.title || "Conversation catch-up")}</div>
+              <div class="library-item-meta">${escapeHtml(formattedDate)} · ${record.messageCount} messages · ${actionCount} actions · ${decisionCount} decisions</div>
+              <div class="library-item-summary">${escapeHtml(record.summary || "No summary available.")}</div>
+            </div>
+            <div class="library-item-actions">
+              <button class="secondary-button" type="button" data-library-open="${escapeHtml(record.id)}">Open</button>
+              <button class="secondary-button" type="button" data-library-delete="${escapeHtml(record.id)}">Delete</button>
+            </div>
+          </article>`;
+        }).join("");
+        clearLibraryButton.disabled = false;
+        libraryList.querySelectorAll("[data-library-open]").forEach(button => {
+          button.addEventListener("click", () => loadSavedConversation(button.dataset.libraryOpen));
+        });
+        libraryList.querySelectorAll("[data-library-delete]").forEach(button => {
+          button.addEventListener("click", () => deleteSavedConversation(button.dataset.libraryDelete));
+        });
+      }
+
+      async function initializeLibrary() {
+        try {
+          libraryDatabase = await openLocalLibrary();
+          await refreshLibrary();
+          libraryStatus.textContent = "Local library ready. Nothing is stored until you review and confirm a save.";
+          const savedRecord = libraryRecords.find(record => record.transcript === input.value && record.identity === identityInput.value.trim());
+          loadedLibraryId = savedRecord ? savedRecord.id : null;
+          saveLibraryButton.textContent = savedRecord ? "Review & update" : "Review & save";
+          saveLibraryButton.disabled = !analyzedMessages.length || input.value + "\n" + identityInput.value !== lastAnalyzedInput;
+        } catch (error) {
+          libraryList.innerHTML = '<div class="library-empty">The local library is unavailable in this browser or file context.</div>';
+          libraryStatus.textContent = error.message || "Could not initialize local storage.";
+          saveLibraryButton.disabled = true;
+          clearLibraryButton.disabled = true;
+        }
+      }
+
+      function browserLocalAI() {
+        return window.LanguageModel || (window.ai && window.ai.languageModel) || null;
+      }
+
+      function setAIStatus(message, isError) {
+        aiStatus.textContent = message;
+        aiStatus.style.color = isError ? "#a34438" : "";
+      }
+
+      async function prepareLocalAI() {
+        const modelAPI = browserLocalAI();
+        if (!modelAPI || typeof modelAPI.create !== "function") {
+          setAIStatus("This browser does not expose a built-in local language model. Rule-based analysis still works; try a browser with its on-device Prompt API enabled.", true);
+          aiEnableButton.disabled = true;
+          return;
+        }
+        if (!window.isSecureContext) {
+          setAIStatus("Browser AI requires a secure context. Open Lucent from localhost or a secure site; the rule-based tools remain available here.", true);
+          return;
+        }
+
+        aiEnableButton.disabled = true;
+        setAIStatus("Checking on-device model availability…");
+        try {
+          if (typeof modelAPI.availability === "function") {
+            const availability = await modelAPI.availability();
+            if (availability === "unavailable") {
+              setAIStatus("A compatible local model is unavailable on this device or browser. Rule-based analysis remains ready.", true);
+              aiEnableButton.disabled = false;
+              return;
+            }
+          }
+          localAISession = await modelAPI.create({
+            monitor(monitor) {
+              monitor.addEventListener("downloadprogress", event => {
+                const percent = Math.round(event.loaded * 100);
+                setAIStatus("Preparing the local model on this device… " + percent + "%");
+              });
+            }
+          });
+          if (typeof localAISession.prompt !== "function") {
+            localAISession = null;
+            throw new Error("The browser model session does not support text prompts.");
+          }
+          aiEnableButton.textContent = "Local AI ready";
+          aiAnalyzeButton.disabled = !analyzedMessages.length || input.value + "\n" + identityInput.value !== lastAnalyzedInput;
+          setAIStatus("Local model ready. Conversation text stays in this browser; run an AI review when you want.");
+        } catch (error) {
+          localAISession = null;
+          aiEnableButton.disabled = false;
+          setAIStatus("Could not prepare on-device AI: " + (error.message || "the model is unavailable").slice(0, 180), true);
+        }
+      }
+
+      function parseAIResponse(response) {
+        const trimmed = response.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+        const parsed = JSON.parse(trimmed);
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+          throw new Error("The local model returned an unexpected response.");
+        }
+        if (typeof parsed.summary !== "string" || !Array.isArray(parsed.findings)) {
+          throw new Error("The local model response did not contain a summary and findings list.");
+        }
+        return parsed;
+      }
+
+      function clearAIResults() {
+        aiFindings = [];
+        aiSummaryValue = "";
+        aiSummary.hidden = true;
+        aiSummaryText.textContent = "";
+      }
+
+      const guidedTourOptions = [
+        {
+          selector: "#conversation",
+          title: "Start with a conversation",
+          description: "Paste or import a chat transcript. Lucent processes it in your browser; this sample is only used when the transcript box is empty."
+        },
+        {
+          selector: "#analyze-button",
+          title: "Find what matters",
+          description: "Run Lucent’s private rule-based scan to surface relevant messages. The short catch-up appears on the right; use the same button again whenever you edit the transcript."
+        },
+        {
+          selector: ".signal-map",
+          title: "Explore the signal map",
+          description: "Each point maps a conversation signal. Select a dot to jump to its source message."
+        },
+        {
+          selector: "#action-board",
+          title: "Review your action list",
+          description: "Check off tasks or edit the owner, priority, and deadline. The timeline below groups time-sensitive items. Verify suggestions against the original conversation."
+        },
+        {
+          selector: ".ai-tools",
+          title: "Optional on-device AI",
+          description: "If your browser offers a local language model, you can prepare it and request a second summary. AI suggestions are source-checked and still need your review; the rule-based flow works without AI."
+        },
+        {
+          selector: "#export-button",
+          title: "Take the brief with you",
+          description: "Export a Markdown catch-up for your notes. This does not save the conversation to Lucent’s library."
+        },
+        {
+          selector: "#save-library-button",
+          title: "Save only after review",
+          description: "Review, edit, or exclude findings before explicitly saving a conversation to this device’s local library. The guided demo never saves or exports anything for you."
+        }
+      ];
+
+      function renderGuidedTourStep() {
+        const step = guidedTourSteps[guidedTourIndex];
+        if (!step) {
+          endGuidedTour();
+          return;
+        }
+        document.querySelectorAll(".tour-target").forEach(element => element.classList.remove("tour-target"));
+        const target = document.querySelector(step.selector);
+        if (!target || target.hidden) {
+          guidedTourSteps.splice(guidedTourIndex, 1);
+          if (guidedTourIndex >= guidedTourSteps.length) guidedTourIndex = guidedTourSteps.length - 1;
+          renderGuidedTourStep();
+          return;
+        }
+        target.classList.add("tour-target");
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        guidedTourTitle.textContent = step.title;
+        guidedTourDescription.textContent = step.description;
+        guidedTourStepLabel.textContent = "Step " + (guidedTourIndex + 1) + " of " + guidedTourSteps.length;
+        guidedTourPrevious.disabled = guidedTourIndex === 0;
+        guidedTourNext.textContent = guidedTourIndex === guidedTourSteps.length - 1 ? "Finish" : "Next";
+      }
+
+      function endGuidedTour() {
+        guidedTour.hidden = true;
+        document.querySelectorAll(".tour-target").forEach(element => element.classList.remove("tour-target"));
+        guidedTourSteps = [];
+        guidedTourIndex = 0;
+        document.removeEventListener("keydown", guidedTourKeydown);
+        if (guidedTourFocus && document.contains(guidedTourFocus)) guidedTourFocus.focus();
+        guidedTourFocus = null;
+      }
+
+      function guidedTourKeydown(event) {
+        if (event.key === "Escape") endGuidedTour();
+      }
+
+      function startGuidedDemo() {
+        guidedTourFocus = document.activeElement;
+        if (!input.value.trim()) {
+          input.value = sampleConversation;
+          input.dispatchEvent(new Event("input"));
+        }
+        if (!analyzedMessages.length || input.value + "\n" + identityInput.value !== lastAnalyzedInput) {
+          const previousEdits = new Map(taskEdits);
+          const previousCompleted = new Set(completedTasks);
+          analyze();
+          if (previousEdits.size) {
+            taskEdits = previousEdits;
+            renderActionBoard();
+            renderDeadlineTimeline();
+          }
+          if (previousCompleted.size) {
+            completedTasks = previousCompleted;
+            renderActionBoard();
+          }
+        }
+        guidedTourSteps = guidedTourOptions.filter(step => {
+          const target = document.querySelector(step.selector);
+          return target && !target.hidden;
+        });
+        guidedTourIndex = 0;
+        guidedTour.hidden = false;
+        document.addEventListener("keydown", guidedTourKeydown);
+        renderGuidedTourStep();
+        guidedTourNext.focus();
+      }
+
+      async function runLocalAIReview() {
+        if (!localAISession || aiBusy || !analyzedMessages.length || input.value + "\n" + identityInput.value !== lastAnalyzedInput) return;
+        const reviewedInput = lastAnalyzedInput;
+        const promptMessages = analyzedMessages.map(message => ({
+          messageIndex: message.index,
+          speaker: message.author,
+          time: message.time,
+          text: message.text
+        }));
+        const serializedMessages = JSON.stringify(promptMessages);
+        if (serializedMessages.length > 40000) {
+          setAIStatus("This transcript is too long for one local AI review. Shorten it or use the rule-based results.", true);
+          return;
+        }
+
+        aiBusy = true;
+        aiAnalyzeButton.disabled = true;
+        setAIStatus("Reviewing locally… larger conversations may take a moment.");
+        try {
+          const response = await localAISession.prompt(
+            "You are a private chat catch-up assistant. Analyze only the supplied messages. Return valid JSON and no markdown, with exactly this shape: " +
+            '{"summary":"brief catch-up in 2-4 sentences","findings":[{"messageIndex":0,"type":"action","quote":"exact contiguous text copied from that message"}]}. ' +
+            'The type value must be exactly "action" or "decision". ' +
+            "Include only clear action items addressed to the user or clear decisions. Use the original messageIndex. Every quote must be an exact, contiguous substring of its cited message. Do not infer deadlines, owners, events, or missing facts. If nothing is clear, return an empty findings array. " +
+            "Messages: " + serializedMessages
+          );
+          if (typeof response !== "string") throw new Error("The local model returned a non-text response.");
+          if (input.value + "\n" + identityInput.value !== reviewedInput) {
+            clearAIResults();
+            setAIStatus("The transcript changed during AI review, so that result was discarded. Re-analyze to continue.");
+            return;
+          }
+          const result = parseAIResponse(response);
+          const messagesByIndex = new Map(analyzedMessages.map(message => [message.index, message]));
+          const unique = new Set();
+          aiFindings = result.findings.flatMap(candidate => {
+            if (!candidate || (candidate.type !== "action" && candidate.type !== "decision") ||
+                !Number.isInteger(candidate.messageIndex) || typeof candidate.quote !== "string") return [];
+            const message = messagesByIndex.get(candidate.messageIndex);
+            const quote = candidate.quote.trim();
+            if (!message || !quote || !message.text.includes(quote)) return [];
+            const key = candidate.type + ":" + candidate.messageIndex;
+            if (unique.has(key)) return [];
+            unique.add(key);
+            const details = candidate.type === "action" ? taskDetails(message) : null;
+            return [{
+              index: message.index,
+              type: candidate.type,
+              text: quote,
+              author: message.author,
+              time: message.time,
+              owner: details ? details.owner : "",
+              due: details ? details.due : "",
+              calendarDate: details ? details.calendarDate : "",
+              priority: details ? details.priority : "Normal",
+              included: true,
+              aiSuggested: true
+            }];
+          });
+          aiSummaryValue = result.summary.trim();
+          aiSummaryText.textContent = aiSummaryValue || "No summary was returned.";
+          aiSummary.hidden = !aiSummaryValue;
+          const skipped = result.findings.length - aiFindings.length;
+          setAIStatus("AI review complete: " + aiFindings.length + " source-checked suggestion" + (aiFindings.length === 1 ? "" : "s") +
+            (skipped ? "; " + skipped + " unverified or duplicate suggestion" + (skipped === 1 ? " was" : "s were") + " excluded." : ".") +
+            " Review every suggestion before saving.");
+        } catch (error) {
+          aiFindings = [];
+          aiSummaryValue = "";
+          aiSummary.hidden = true;
+          setAIStatus("Local AI review failed: " + (error.message || "unexpected model response").slice(0, 180), true);
+        } finally {
+          aiBusy = false;
+          aiAnalyzeButton.disabled = !localAISession || !analyzedMessages.length || input.value + "\n" + identityInput.value !== lastAnalyzedInput;
+        }
+      }
+
+      function renderReviewFindings() {
+        if (!reviewFindings.length) {
+          reviewList.innerHTML = '<div class="review-empty">No action or decision suggestions were detected. You can still save the transcript to your local library.</div>';
+          return;
+        }
+        reviewList.innerHTML = reviewFindings.map((finding, index) => `
+          <article class="review-card${finding.included ? "" : " excluded"}" data-review-card="${index}">
+            <div class="review-card-top">
+              <input type="checkbox" data-review-include="${index}"${finding.included ? " checked" : ""} aria-label="Include this finding in the library">
+              <select class="review-type" data-review-field="type" data-review-index="${index}" aria-label="Finding type">
+                <option value="action"${finding.type === "action" ? " selected" : ""}>Action item</option>
+                <option value="decision"${finding.type === "decision" ? " selected" : ""}>Decision</option>
+              </select>
+              <span class="review-source">${finding.aiSuggested ? '<span class="review-ai-label">AI suggestion · verify</span> · ' : ""}${escapeHtml(finding.author)}${finding.time ? " · " + escapeHtml(finding.time) : ""}</span>
+            </div>
+            <textarea class="review-text" data-review-field="text" data-review-index="${index}" aria-label="Edit finding">${escapeHtml(finding.text)}</textarea>
+            <div class="review-fields"${finding.type === "action" ? "" : " hidden"}>
+                <label>Owner<input class="review-owner" data-review-field="owner" data-review-index="${index}" value="${escapeHtml(finding.owner)}"></label>
+              <label>Deadline<input class="review-due" data-review-field="due" data-review-index="${index}" value="${escapeHtml(finding.due)}" placeholder="No deadline set"></label>
+                <label class="calendar-date-label">Confirmed calendar date<input type="date" data-review-field="calendarDate" data-review-index="${index}" value="${escapeHtml(finding.calendarDate)}"></label>
+              <label>Priority<select class="review-priority" data-review-field="priority" data-review-index="${index}">
+                ${["High", "Normal", "Low"].map(priority => `<option${finding.priority === priority ? " selected" : ""}>${priority}</option>`).join("")}
+              </select></label>
+            </div>
+          </article>`).join("");
+        reviewList.querySelectorAll("[data-review-include]").forEach(control => {
+          control.addEventListener("change", () => {
+            const index = Number(control.dataset.reviewInclude);
+            reviewFindings[index].included = control.checked;
+            reviewList.querySelector(`[data-review-card="${index}"]`).classList.toggle("excluded", !control.checked);
+          });
+        });
+        reviewList.querySelectorAll("[data-review-field]").forEach(control => {
+          const update = () => {
+            const index = Number(control.dataset.reviewIndex);
+            const field = control.dataset.reviewField;
+            reviewFindings[index][field] = control.value;
+            if (field === "type") {
+              const fields = reviewList.querySelector(`[data-review-card="${index}"] .review-fields`);
+              fields.hidden = control.value !== "action";
+            }
+          };
+          control.addEventListener("input", update);
+          control.addEventListener("change", update);
+        });
+      }
+
+      function openReviewBeforeSave() {
+        if (!libraryDatabase || !analyzedMessages.length || input.value + "\n" + identityInput.value !== lastAnalyzedInput) return;
+        reviewFindings = [];
+        analyzedMessages.forEach(message => {
+          if (message.action && message.mention) {
+            const details = taskDetails(message);
+            reviewFindings.push({
+              index: message.index,
+              type: "action",
+              text: details.text,
+              author: message.author,
+              time: message.time,
+              owner: details.owner,
+              due: details.due,
+              calendarDate: details.calendarDate,
+              priority: details.priority,
+              included: true
+            });
+          }
+          if (message.decision) {
+            reviewFindings.push({
+              index: message.index,
+              type: "decision",
+              text: message.text,
+              author: message.author,
+              time: message.time,
+              owner: "",
+              due: "",
+              priority: "Normal",
+              included: true
+            });
+          }
+        });
+        const existing = new Set(reviewFindings.map(finding => finding.type + ":" + finding.index));
+        aiFindings.forEach(finding => {
+          const key = finding.type + ":" + finding.index;
+          if (!existing.has(key)) {
+            reviewFindings.push({ ...finding });
+            existing.add(key);
+          }
+        });
+        renderReviewFindings();
+        reviewConfirm.textContent = loadedLibraryId ? "Update saved chat" : "Save reviewed chat";
+        if (typeof reviewDialog.showModal === "function") reviewDialog.showModal();
+        else libraryStatus.textContent = "This browser does not support the review dialog.";
+      }
+
+      async function saveCurrentConversation() {
+        if (!libraryDatabase || !analyzedMessages.length || input.value + "\n" + identityInput.value !== lastAnalyzedInput) return;
+        const selected = reviewFindings.filter(finding => finding.included && finding.text.trim());
+        const actions = selected.filter(finding => finding.type === "action").map(finding => ({
+          index: finding.index,
+          text: finding.text.trim(),
+          owner: finding.owner.trim(),
+          due: finding.due.trim(),
+          calendarDate: finding.calendarDate,
+          priority: finding.priority
+        }));
+        const decisions = selected.filter(finding => finding.type === "decision").map(finding => finding.text.trim());
+        saveLibraryButton.disabled = true;
+        reviewConfirm.disabled = true;
+        libraryStatus.textContent = "Saving the reviewed conversation on this device…";
+        try {
+          const existing = libraryRecords.find(record => record.transcript === input.value && record.identity === identityInput.value.trim());
+          const first = analyzedMessages.find(message => message.text.trim());
+          const record = {
+            id: existing ? existing.id : (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)),
+            title: first ? first.text.slice(0, 72) : "Conversation catch-up",
+            transcript: input.value,
+            identity: identityInput.value.trim(),
+            summary: [
+              actions.length ? "Confirmed actions: " + actions.map(action => action.text).join(" | ") : "",
+              decisions.length ? "Confirmed decisions: " + decisions.join(" | ") : ""
+            ].filter(Boolean).join(" ") || "No findings confirmed. Transcript saved for later search.",
+            messageCount: analyzedMessages.length,
+            actions,
+            decisions,
+            savedAt: Date.now()
+          };
+          await libraryRequest("readwrite", store => store.put(record));
+          loadedLibraryId = record.id;
+          await refreshLibrary();
+          libraryStatus.textContent = existing ? "Reviewed findings saved locally; the saved conversation was updated." : "Reviewed conversation saved to this device.";
+          saveLibraryButton.textContent = "Review & update";
+          reviewDialog.close();
+        } catch (error) {
+          libraryStatus.textContent = "Could not save this conversation: " + (error.message || "storage error");
+        } finally {
+          saveLibraryButton.disabled = false;
+          reviewConfirm.disabled = false;
+        }
+      }
+
+      async function loadSavedConversation(id) {
+        const record = libraryRecords.find(item => item.id === id);
+        if (!record) {
+          libraryStatus.textContent = "That saved conversation is no longer in the library.";
+          await refreshLibrary();
+          return;
+        }
+        followUpMode = false;
+        baselineTasks = [];
+        followUpResults = [];
+        followUpOverrides = new Map();
+        inputHeading.textContent = "Paste a conversation";
+        analyzeButton.innerHTML = '<span aria-hidden="true">✦</span> Find what matters';
+        input.value = record.transcript;
+        identityInput.value = record.identity || identityInput.value;
+        input.dispatchEvent(new Event("input"));
+        analyze();
+        record.actions?.forEach(savedAction => {
+          const message = analyzedMessages.find(item => item.index === savedAction.index) ||
+            analyzedMessages.find(item => item.text === savedAction.text);
+          if (message) taskEdits.set(message.index, { ...savedAction });
+        });
+        renderActionBoard();
+        renderDeadlineTimeline();
+        loadedLibraryId = record.id;
+        saveLibraryButton.textContent = "Review & update";
+        libraryStatus.textContent = "Opened saved conversation from this device.";
+        document.querySelector(".input-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      async function deleteSavedConversation(id) {
+        const record = libraryRecords.find(item => item.id === id);
+        if (!record || !window.confirm("Delete this saved conversation from this device?")) return;
+        try {
+          await libraryRequest("readwrite", store => store.delete(id));
+          if (loadedLibraryId === id) {
+            loadedLibraryId = null;
+            saveLibraryButton.textContent = "Review & save";
+          }
+          await refreshLibrary();
+          libraryStatus.textContent = "Saved conversation deleted from this device.";
+        } catch (error) {
+          libraryStatus.textContent = "Could not delete this conversation: " + (error.message || "storage error");
+        }
+      }
+
+      async function deleteAllSavedConversations() {
+        if (!libraryRecords.length || !window.confirm("Delete every saved conversation from this device? This cannot be undone.")) return;
+        try {
+          await libraryRequest("readwrite", store => store.clear());
+          loadedLibraryId = null;
+          saveLibraryButton.textContent = "Review & save";
+          await refreshLibrary();
+          libraryStatus.textContent = "All saved conversations were deleted from this device.";
+        } catch (error) {
+          libraryStatus.textContent = "Could not clear the local library: " + (error.message || "storage error");
+        }
+      }
+
+      function formatTimestamp(value) {
+        if (value === undefined || value === null || value === "") return "";
+        const numeric = Number(value);
+        if (Number.isFinite(numeric) && String(value).trim() !== "") {
+          const date = new Date(numeric < 100000000000 ? numeric * 1000 : numeric);
+          if (!Number.isNaN(date.getTime())) return date.toLocaleString();
+        }
+        return String(value);
+      }
+
+      function normalizeStructuredMessages(data) {
+        const messages = Array.isArray(data) ? data
+          : Array.isArray(data.messages) ? data.messages
+          : Array.isArray(data.data?.messages) ? data.data.messages
+          : null;
+        if (!messages) throw new Error("JSON import needs a message array, such as a Slack export.");
+        const normalized = messages.map(message => {
+          const text = message.text ?? message.content ?? message.message;
+          if (typeof text !== "string" || !text.trim()) return "";
+          const profile = message.user_profile || message.author || {};
+          const author = typeof profile === "string"
+            ? profile
+            : profile.real_name || profile.name || profile.username || message.username || message.user_name || message.user || "Unknown";
+          const time = formatTimestamp(message.ts ?? message.timestamp ?? message.created_at ?? message.date);
+          return (time ? "[" + time + "] " : "") + String(author) + ": " + text.trim();
+        }).filter(Boolean);
+        if (!normalized.length) throw new Error("No readable messages were found in this JSON file.");
+        return normalized.join("\n");
+      }
+
+      function parseCsv(text) {
+        const rows = [];
+        let row = [];
+        let cell = "";
+        let quoted = false;
+        for (let index = 0; index < text.length; index += 1) {
+          const char = text[index];
+          if (quoted && char === '"' && text[index + 1] === '"') {
+            cell += '"';
+            index += 1;
+          } else if (char === '"') {
+            quoted = !quoted;
+          } else if (char === "," && !quoted) {
+            row.push(cell);
+            cell = "";
+          } else if ((char === "\n" || char === "\r") && !quoted) {
+            if (char === "\r" && text[index + 1] === "\n") index += 1;
+            row.push(cell);
+            if (row.some(value => value.trim())) rows.push(row);
+            row = [];
+            cell = "";
+          } else {
+            cell += char;
+          }
+        }
+        if (quoted) throw new Error("This CSV has an unfinished quoted field.");
+        row.push(cell);
+        if (row.some(value => value.trim())) rows.push(row);
+        return rows;
+      }
+
+      function normalizeCsv(text) {
+        const rows = parseCsv(text);
+        if (rows.length < 2) throw new Error("CSV needs a header row and at least one message.");
+        const headers = rows[0].map(value => value.trim().toLowerCase());
+        const findColumn = names => headers.findIndex(header => names.includes(header));
+        const textColumn = findColumn(["text", "message", "content", "body"]);
+        const authorColumn = findColumn(["user", "username", "author", "name", "sender"]);
+        const timeColumn = findColumn(["ts", "timestamp", "date", "time", "created_at"]);
+        if (textColumn < 0) throw new Error("CSV needs a text, message, content, or body column.");
+        return rows.slice(1).map(row => {
+          const content = (row[textColumn] || "").trim();
+          if (!content) return "";
+          const author = authorColumn >= 0 && row[authorColumn] ? row[authorColumn].trim() : "Unknown";
+          const time = timeColumn >= 0 ? formatTimestamp(row[timeColumn]) : "";
+          return (time ? "[" + time + "] " : "") + author + ": " + content;
+        }).filter(Boolean).join("\n");
+      }
+
+      function normalizeTextTranscript(text) {
+        return text.split(/\r?\n/).map(line => {
+          const discord = line.match(/^\s*(\d{4}[-/]\d{1,2}[-/]\d{1,2}[ T]\d{1,2}:\d{2}(?::\d{2})?(?:\s?[AP]M)?)\s+-\s+([^:]{1,60}):\s*(.*)$/i);
+          if (discord) return "[" + discord[1] + "] " + discord[2].trim() + ": " + discord[3];
+          return line;
+        }).join("\n");
+      }
+
+      async function importFile(file) {
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+          lineCount.textContent = "File is larger than 5 MB";
+          return;
+        }
+        const extension = file.name.split(".").pop().toLowerCase();
+        if (!["txt", "csv", "json"].includes(extension)) {
+          lineCount.textContent = "Choose a .txt, .csv, or .json file";
+          return;
+        }
+        try {
+          const text = await file.text();
+          const imported = extension === "json"
+            ? normalizeStructuredMessages(JSON.parse(text))
+            : extension === "csv" ? normalizeCsv(text) : normalizeTextTranscript(text);
+          if (!imported.trim()) throw new Error("The selected file does not contain any messages.");
+          input.value = imported;
+          input.dispatchEvent(new Event("input"));
+          analyze();
+          updated.textContent = "Imported " + file.name;
+        } catch (error) {
+          lineCount.textContent = error instanceof SyntaxError
+            ? "Invalid JSON file — check its format"
+            : error.message || "Could not read this file";
+        } finally {
+          fileInput.value = "";
+        }
+      }
+
+      function deadlineFrom(text) {
+        const patterns = [
+          /\bby\s+(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)(?:\s+(?:eod|end of day))?(?:\s+at\s+\d{1,2}(?::\d{2})?\s?(?:am|pm))?/i,
+          /\b(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)(?:\s+(?:eod|end of day))?(?:\s+at\s+\d{1,2}(?::\d{2})?\s?(?:am|pm))?/i,
+          /\b(?:today|tomorrow|tonight|this afternoon|this evening|eod|end of day)(?:\s+at\s+\d{1,2}(?::\d{2})?\s?(?:am|pm))?/i,
+          /\b(?:by|due)\s+(?:noon|\d{1,2}(?::\d{2})?\s?(?:am|pm))/i,
+          /\b(?:20\d{2}-\d{1,2}-\d{1,2}|\d{1,2}\/\d{1,2}\/20\d{2})\b/
+        ];
+        for (const pattern of patterns) {
+          const match = text.match(pattern);
+          if (match) return match[0];
+        }
+        return "";
+      }
+
+      function taskDetails(message) {
+        if (!taskEdits.has(message.index)) {
+          taskEdits.set(message.index, {
+            text: message.text,
+            owner: message.mention ? identityInput.value.trim() : message.author,
+            due: deadlineFrom(message.text),
+            calendarDate: /^\d{4}-\d{2}-\d{2}$/.test(message.time) ? message.time : "",
+            priority: message.urgent ? "High" : "Normal"
+          });
+        }
+        return taskEdits.get(message.index);
+      }
+
+      function renderActionBoard() {
+        const tasks = analyzedMessages.filter(message => message.action && message.mention);
+        if (!tasks.length) {
+          actionBoard.hidden = true;
+          actionBoard.innerHTML = "";
+          return;
+        }
+        actionBoard.hidden = false;
+        const doneCount = tasks.filter(message => completedTasks.has(message.index)).length;
+        actionBoard.innerHTML = `
+          <div class="action-board-head">
+            <span class="action-board-title">Your action checklist</span>
+            <div class="action-board-tools">
+              <span class="action-progress">${doneCount} / ${tasks.length} done</span>
+              <button class="secondary-button" id="calendar-export-button" type="button" disabled>Export calendar</button>
+            </div>
+          </div>
+          ${tasks.map(message => {
+            const done = completedTasks.has(message.index);
+            const details = taskDetails(message);
+            return `<div class="task-row${done ? " done" : ""}">
+              <input type="checkbox" data-task-complete="${message.index}"${done ? " checked" : ""} aria-label="Mark action complete">
+              <div class="task-copy">
+                <span class="task-main-text" data-task-display="${message.index}">${escapeHtml(details.text)}</span>
+                <span class="task-meta" data-task-meta="${message.index}">${escapeHtml(details.priority)} priority · ${escapeHtml(details.owner || "Unassigned")}${details.due ? " · Due " + escapeHtml(details.due) : " · No deadline set"}${details.calendarDate ? " · Confirmed date " + escapeHtml(details.calendarDate) : ""}</span>
+                <details class="task-edit">
+                  <summary>Edit action details</summary>
+                  <div class="task-edit-grid">
+                    <label>Action<input type="text" data-edit-index="${message.index}" data-edit-field="text" value="${escapeHtml(details.text)}"></label>
+                    <label>Owner<input type="text" data-edit-index="${message.index}" data-edit-field="owner" value="${escapeHtml(details.owner)}"></label>
+                    <label>Deadline<input type="text" data-edit-index="${message.index}" data-edit-field="due" value="${escapeHtml(details.due)}" placeholder="e.g. tomorrow, Friday 2 PM"></label>
+                    <label class="calendar-date-label">Confirmed calendar date<input type="date" data-edit-index="${message.index}" data-edit-field="calendarDate" value="${escapeHtml(details.calendarDate)}"></label>
+                    <label>Priority<select data-edit-index="${message.index}" data-edit-field="priority">
+                      ${["High", "Normal", "Low"].map(priority => `<option${details.priority === priority ? " selected" : ""}>${priority}</option>`).join("")}
+                    </select></label>
+                  </div>
+                </details>
+              </div>
+            </div>`;
+          }).join("")}`;
+        actionBoard.querySelectorAll("[data-task-complete]").forEach(checkbox => {
+          checkbox.addEventListener("change", () => {
+            const index = Number(checkbox.dataset.taskComplete);
+            if (checkbox.checked) completedTasks.add(index);
+            else completedTasks.delete(index);
+            renderActionBoard();
+            renderDeadlineTimeline();
+          });
+        });
+        actionBoard.querySelectorAll("[data-edit-index]").forEach(control => {
+          control.addEventListener("input", updateTaskEdit);
+          control.addEventListener("change", updateTaskEdit);
+        });
+        updateCalendarExportButton();
+        document.getElementById("calendar-export-button").addEventListener("click", exportCalendar);
+        const note = document.createElement("div");
+        note.className = "calendar-note";
+        note.textContent = "Only tasks with a confirmed calendar date are exported. Relative date guesses are not scheduled automatically.";
+        actionBoard.appendChild(note);
+      }
+
+      function updateTaskEdit(event) {
+        const index = Number(event.currentTarget.dataset.editIndex);
+        const field = event.currentTarget.dataset.editField;
+        const message = analyzedMessages.find(item => item.index === index);
+        if (!message || !["text", "owner", "due", "calendarDate", "priority"].includes(field)) return;
+        const details = taskDetails(message);
+        details[field] = event.currentTarget.value.trim();
+        const display = actionBoard.querySelector(`[data-task-display="${index}"]`);
+        const meta = actionBoard.querySelector(`[data-task-meta="${index}"]`);
+        if (display) display.textContent = details.text;
+        if (meta) meta.textContent = details.priority + " priority · " + (details.owner || "Unassigned") + (details.due ? " · Due " + details.due : " · No deadline set") + (details.calendarDate ? " · Confirmed date " + details.calendarDate : "");
+        updateCalendarExportButton();
+        renderDeadlineTimeline();
+      }
+
+      function updateCalendarExportButton() {
+        const button = document.getElementById("calendar-export-button");
+        if (!button) return;
+        const eligible = analyzedMessages.filter(message => message.action && message.mention)
+          .some(message => /^\d{4}-\d{2}-\d{2}$/.test(taskDetails(message).calendarDate));
+        button.disabled = !eligible;
+      }
+
+      function icsEscape(value) {
+        return value.replace(/\\/g, "\\\\").replace(/\r?\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
+      }
+
+      function exportCalendar() {
+        const events = analyzedMessages.filter(message => message.action && message.mention).map(message => ({
+          message,
+          details: taskDetails(message)
+        })).filter(item => /^\d{4}-\d{2}-\d{2}$/.test(item.details.calendarDate));
+        if (!events.length) return;
+        const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+        const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Lucent//Conversation Follow-up//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH"];
+        events.forEach(({ message, details }, index) => {
+          const nextDay = new Date(details.calendarDate + "T00:00:00Z");
+          nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+          const endDate = nextDay.toISOString().slice(0, 10).replace(/-/g, "");
+          const safeTitle = details.text.replace(/\s+/g, " ").trim().slice(0, 100) || "Conversation action";
+          lines.push(
+            "BEGIN:VEVENT",
+            "UID:" + Date.now() + "-" + index + "@lucent.local",
+            "DTSTAMP:" + stamp,
+            "DTSTART;VALUE=DATE:" + details.calendarDate.replace(/-/g, ""),
+            "DTEND;VALUE=DATE:" + endDate,
+            "SUMMARY:" + icsEscape(safeTitle),
+            "DESCRIPTION:" + icsEscape("Owner: " + (details.owner || "Unassigned") + " | Priority: " + details.priority + " | Source: " + message.author),
+            "END:VEVENT"
+          );
+        });
+        lines.push("END:VCALENDAR");
+        const blob = new Blob([lines.join("\r\n") + "\r\n"], { type: "text/calendar;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "lucent-confirmed-actions.ics";
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function deadlineBucket(value) {
+        const due = value.trim();
+        if (!due) return "Unscheduled";
+        const lower = due.toLowerCase();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (/\b(yesterday|last\s+(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday))\b/.test(lower)) return "Overdue";
+        const iso = lower.match(/\b(20\d{2})-(\d{1,2})-(\d{1,2})\b/);
+        const numericDate = lower.match(/\b(\d{1,2})\/(\d{1,2})\/(20\d{2})\b/);
+        let date = null;
+        if (iso) date = new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+        else if (numericDate) date = new Date(Number(numericDate[3]), Number(numericDate[1]) - 1, Number(numericDate[2]));
+        if (date && !Number.isNaN(date.getTime())) {
+          date.setHours(0, 0, 0, 0);
+          const days = Math.round((date - today) / 86400000);
+          return days < 0 ? "Overdue" : days === 0 ? "Today" : days === 1 ? "Tomorrow" : days <= 7 ? "This week" : "Later";
+        }
+        const weekdays = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+        const weekdayIndex = weekdays.findIndex(day => new RegExp("\\b" + day + "\\b").test(lower));
+        if (weekdayIndex >= 0) {
+          const days = (weekdayIndex - today.getDay() + 7) % 7;
+          return days === 0 ? "Today" : days === 1 ? "Tomorrow" : days <= 6 ? "This week" : "Later";
+        }
+        if (/\btomorrow\b/.test(lower)) return "Tomorrow";
+        if (/\b(today|tonight|this afternoon|this evening|eod|end of day)\b/.test(lower)) return "Today";
+        if (/\b(next week|next month|later|someday)\b/.test(lower)) return "Later";
+        return "Date unclear";
+      }
+
+      function renderDeadlineTimeline() {
+        const actionIndexes = new Set(analyzedMessages.filter(message => message.action && message.mention).map(message => message.index));
+        const items = analyzedMessages.filter(message => {
+          const recap = /\b(?:your|the)\s+(?:two|following|action)\s+(?:things|tasks|items)\b/i.test(message.text);
+          return !recap && (actionIndexes.has(message.index) || message.urgent);
+        }).map(message => {
+          const details = actionIndexes.has(message.index) ? taskDetails(message) : {
+            text: message.text,
+            owner: message.author,
+            due: deadlineFrom(message.text),
+            priority: "High"
+          };
+          const timelineDate = details.calendarDate || details.due;
+          return { message, details: { ...details, timelineDate }, group: deadlineBucket(timelineDate), isAction: actionIndexes.has(message.index) };
+        });
+        if (!items.length) {
+          deadlineTimeline.hidden = true;
+          deadlineTimeline.innerHTML = "";
+          return;
+        }
+        deadlineTimeline.hidden = false;
+        const groupOrder = ["Overdue", "Today", "Tomorrow", "This week", "Later", "Date unclear", "Unscheduled"];
+        const groups = groupOrder.map(group => [group, items.filter(item => item.group === group)]).filter(([, entries]) => entries.length);
+        deadlineTimeline.innerHTML = `
+          <div class="timeline-head">
+            <span class="timeline-title">Deadline timeline</span>
+            <span class="timeline-caption">Relative dates are estimates — confirm the original message</span>
+          </div>
+          ${groups.map(([group, entries]) => `<div class="timeline-group">
+            <div class="timeline-group-title">${group}</div>
+            ${entries.map(item => `<div class="timeline-entry">
+              <span class="timeline-marker${item.isAction ? " action" : ""}"></span>
+              <span class="timeline-copy">${escapeHtml(item.details.text)}<span class="timeline-owner">${escapeHtml(item.details.owner || "Unassigned")} · ${escapeHtml(item.details.priority)} priority</span></span>
+              <span class="timeline-due">${escapeHtml(item.details.timelineDate || "No date")}</span>
+            </div>`).join("")}
+          </div>`).join("")}`;
+      }
+
+      const taskStopWords = new Set(["please", "today", "tomorrow", "tonight", "need", "your", "could", "would", "have", "this", "that", "with", "from", "into", "about", "before", "after", "when", "then", "them", "they", "their", "just", "make", "sure", "send", "follow"]);
+      function normalizedTaskTerms(text) {
+        return [...new Set(text.toLowerCase()
+          .replace(/@[\w-]+/g, " ")
+          .match(/[a-z0-9]{4,}/g) || [])]
+          .filter(term => !taskStopWords.has(term))
+          .map(term => term.length > 5 && term.endsWith("ing") ? term.slice(0, -3)
+            : term.length > 4 && term.endsWith("ed") ? term.slice(0, -2)
+            : term.length > 4 && term.endsWith("es") ? term.slice(0, -2)
+            : term.length > 3 && term.endsWith("s") ? term.slice(0, -1)
+            : term);
+      }
+
+      function compareFollowUp(tasks, messages) {
+        const completionPattern = /\b(done|completed|finished|sent|submitted|approved|resolved|fixed|shipped|merged|delivered|reviewed|closed|all set|wrapped up|taken care of)\b/i;
+        return tasks.map(task => {
+          const taskTokens = normalizedTaskTerms(task.text);
+          let best = null;
+          messages.forEach(message => {
+            const messageTokens = new Set(normalizedTaskTerms(message.text));
+            const overlap = taskTokens.filter(token => messageTokens.has(token)).length;
+            const threshold = Math.min(2, taskTokens.length);
+            if (overlap < threshold) return;
+            const score = overlap / Math.max(1, Math.min(taskTokens.length, messageTokens.size));
+            if (!best || score > best.score) best = { message, score, overlap };
+          });
+          if (!best) return { task, status: "missing", evidence: null };
+          const status = completionPattern.test(best.message.text) ? "done" : "mentioned";
+          return { task, status, evidence: best.message };
+        });
+      }
+
+      function renderFollowThrough() {
+        if (!followUpMode || !followUpResults.length) {
+          followthrough.hidden = true;
+          followthrough.innerHTML = "";
+          return;
+        }
+        followthrough.hidden = false;
+        const doneCount = followUpResults.filter(result => (
+          followUpOverrides.has(result.task.index)
+            ? followUpOverrides.get(result.task.index) === "done"
+            : result.status === "done"
+        )).length;
+        followthrough.innerHTML = `
+          <div class="followthrough-head">
+            <div>
+              <div class="followthrough-title">Follow-through check</div>
+              <div class="followthrough-caption">Compared against ${baselineTasks.length} earlier action${baselineTasks.length === 1 ? "" : "s"}. Matches are suggestions; confirm before closing tasks.</div>
+            </div>
+            <span class="action-progress">${doneCount} / ${followUpResults.length} done</span>
+          </div>
+          ${followUpResults.map(result => {
+            const override = followUpOverrides.get(result.task.index);
+            const status = override || result.status;
+            const isDone = status === "done";
+            const label = override === "done" ? "Marked done" : status === "done" ? "Likely done" : status === "mentioned" ? "Still mentioned" : "No update found";
+            const statusClass = isDone ? "done" : status === "mentioned" ? "mentioned" : "";
+            return `<div class="followthrough-item">
+              <div class="followthrough-item-top">
+                <span class="followthrough-task">${escapeHtml(result.task.text)}</span>
+                <span class="followthrough-status ${statusClass}">${label}</span>
+              </div>
+              ${result.evidence ? `<div class="followthrough-match">Possible match: “${escapeHtml(result.evidence.text)}”</div>` : ""}
+              <button class="followthrough-control" type="button" data-followup-index="${result.task.index}">${override === "done" ? "Undo manual completion" : isDone ? "Reopen · use detected status" : "Mark complete"}</button>
+            </div>`;
+          }).join("")}`;
+        followthrough.querySelectorAll("[data-followup-index]").forEach(button => {
+          button.addEventListener("click", () => {
+            const index = Number(button.dataset.followupIndex);
+            if (followUpOverrides.get(index) === "done") followUpOverrides.delete(index);
+            else followUpOverrides.set(index, "done");
+            renderFollowThrough();
+          });
+        });
+      }
+
+      function clearForFollowUp() {
+        input.value = "";
+        input.dispatchEvent(new Event("input"));
+        analyzedMessages = [];
+        followUpResults = [];
+        completedTasks = new Set();
+        followUpOverrides = new Map();
+        inputHeading.textContent = "Paste a follow-up conversation";
+        analyzeButton.innerHTML = '<span aria-hidden="true">↻</span> Compare follow-up';
+        updated.textContent = "Tracking " + baselineTasks.length + " earlier action" + (baselineTasks.length === 1 ? "" : "s");
+        document.getElementById("stat-messages").textContent = "—";
+        document.getElementById("stat-actions").textContent = "—";
+        document.getElementById("stat-decisions").textContent = "—";
+        brief.classList.add("brief-empty");
+        brief.textContent = "Add the newer conversation to see what changed and whether earlier actions moved forward.";
+        actionBoard.hidden = true;
+        followthrough.hidden = true;
+        deadlineTimeline.hidden = true;
+        document.getElementById("signal-note").hidden = true;
+        exportButton.disabled = true;
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon" aria-hidden="true">↻</div>Paste a newer transcript, then compare it with the tracked actions.</div>';
+        followupButton.disabled = true;
+        input.focus();
+      }
+
+      function summarize(messages) {
+        const decisions = messages.filter(message => message.decision);
+        const actions = messages.filter(message => message.action);
+        const urgent = messages.filter(message => message.urgent);
+        const sentences = [];
+        if (decisions.length) sentences.push(decisions.length === 1
+          ? "A decision was made: " + decisions[0].text
+          : decisions.length + " decisions were made, including: " + decisions[0].text);
+        if (actions.length) {
+          const you = actions.filter(message => message.mention);
+          const focus = you.length ? you : actions;
+          sentences.push(focus.length === 1
+            ? "You may need to act: " + focus[0].text
+            : focus.length + " messages need follow-up" + (you.length ? " from you" : "") + ", including: " + focus[0].text);
+        }
+        if (urgent.length) {
+          const deadlines = urgent.filter(message => /\b(today|tomorrow|eod|by|deadline|due|tonight)\b/i.test(message.text));
+          if (deadlines.length) sentences.push("Watch the timing: " + deadlines[0].text);
+        }
+        if (!sentences.length) return "No obvious action items or decisions detected. The conversation has " + messages.length + " messages; skim the highlights below for context.";
+        return sentences.join(" ");
+      }
+
+      function tagsFor(message) {
+        const tags = [];
+        if (message.urgent) tags.push('<span class="tag tag-urgent">Time-sensitive</span>');
+        if (message.action) tags.push(`<span class="tag tag-action">${message.mention ? "Needs you" : "Follow-up"}</span>`);
+        if (message.decision) tags.push('<span class="tag tag-decision">Decision</span>');
+        if (message.mention) tags.push('<span class="tag tag-mention">You mentioned</span>');
+        if (message.ownTask && !message.action) tags.push('<span class="tag tag-action">In progress</span>');
+        return tags.join("");
+      }
+
+      function renderMessages() {
+        const visible = analyzedMessages.filter(message => {
+          if (activeFilter === "all") return message.score > 0;
+          if (activeFilter === "action") return message.action && message.mention;
+          if (activeFilter === "urgent") return message.urgent;
+          return message[activeFilter];
+        }).sort((a, b) => b.score - a.score || a.index - b.index);
+
+        if (!visible.length) {
+          list.innerHTML = '<div class="empty-state"><div class="empty-icon" aria-hidden="true">✓</div>No highlights in this category. Try another filter.</div>';
+          return;
+        }
+
+        list.innerHTML = visible.map(message => `
+          <article class="message-card" data-message-index="${message.index}" tabindex="-1">
+            <div class="message-topline">
+              <div class="sender-wrap"><span class="sender">${escapeHtml(message.author)}</span></div>
+              <span class="message-time">${escapeHtml(message.time || "From transcript")}</span>
+            </div>
+            <p class="message-body">${escapeHtml(message.text)}</p>
+            <div class="tag-row">${tagsFor(message)}</div>
+          </article>`).join("");
+      }
+
+      function analyze() {
+        const lines = input.value.split(/\r?\n/);
+        analyzedMessages = lines.map(parseLine).filter(Boolean);
+        if (!analyzedMessages.length) {
+          input.focus();
+          input.setAttribute("aria-invalid", "true");
+          lineCount.textContent = "Paste a conversation to get started";
+          return;
+        }
+        clearAIResults();
+        taskEdits = new Map();
+        lastAnalyzedInput = input.value + "\n" + identityInput.value;
+        input.removeAttribute("aria-invalid");
+        activeFilter = "all";
+        filters.forEach(button => {
+          const selected = button.dataset.filter === "all";
+          button.classList.toggle("active", selected);
+          button.setAttribute("aria-selected", String(selected));
+        });
+        const actionCount = analyzedMessages.filter(message => message.action && message.mention).length;
+        const decisionCount = analyzedMessages.filter(message => message.decision).length;
+        document.getElementById("stat-messages").textContent = String(analyzedMessages.length);
+        document.getElementById("stat-actions").textContent = String(actionCount);
+        document.getElementById("stat-decisions").textContent = String(decisionCount);
+        brief.classList.remove("brief-empty");
+        followUpResults = followUpMode ? compareFollowUp(baselineTasks, analyzedMessages) : [];
+        const followUpDone = followUpResults.filter(result => result.status === "done").length;
+        const followUpStillMentioned = followUpResults.filter(result => result.status === "mentioned").length;
+        brief.textContent = summarize(analyzedMessages) + (followUpMode
+          ? " Follow-through: " + followUpDone + " likely done, " + followUpStillMentioned + " mentioned again, and " + (followUpResults.length - followUpDone - followUpStillMentioned) + " with no clear update."
+          : "");
+        updated.textContent = "Just now";
+        completedTasks = new Set();
+        exportButton.disabled = false;
+        document.getElementById("signal-note").hidden = false;
+        renderActionBoard();
+        renderDeadlineTimeline();
+        renderFollowThrough();
+        renderMessages();
+        drawSignalMap();
+        const canTrackActions = actionCount > 0;
+        followupButton.disabled = !canTrackActions;
+        followupButton.textContent = followUpMode
+          ? "Set this chat as a new baseline"
+          : "Track follow-through · " + actionCount + " action" + (actionCount === 1 ? "" : "s");
+        const savedRecord = libraryRecords.find(record => record.transcript === input.value && record.identity === identityInput.value.trim());
+        loadedLibraryId = savedRecord ? savedRecord.id : null;
+        saveLibraryButton.textContent = savedRecord ? "Review & update" : "Review & save";
+        saveLibraryButton.disabled = !libraryDatabase;
+        aiAnalyzeButton.disabled = !localAISession;
+        if (localAISession) setAIStatus("Local model ready. Run an AI review for a grounded summary and suggestions.");
+      }
+
+      input.addEventListener("input", () => {
+        input.removeAttribute("aria-invalid");
+        aiAnalyzeButton.disabled = true;
+        const count = input.value.split(/\r?\n/).filter(line => line.trim()).length;
+        lineCount.textContent = count + (count === 1 ? " message" : " messages");
+        if (analyzedMessages.length && input.value + "\n" + identityInput.value !== lastAnalyzedInput) {
+          clearAIResults();
+          updated.textContent = "Transcript changed — re-analyze";
+          followupButton.disabled = true;
+          saveLibraryButton.disabled = true;
+          saveLibraryButton.textContent = "Review & save";
+          loadedLibraryId = null;
+        }
+      });
+      identityInput.addEventListener("input", () => {
+        aiAnalyzeButton.disabled = true;
+        if (analyzedMessages.length && input.value + "\n" + identityInput.value !== lastAnalyzedInput) {
+          clearAIResults();
+          updated.textContent = "Settings changed — re-analyze";
+          followupButton.disabled = true;
+          saveLibraryButton.disabled = true;
+          saveLibraryButton.textContent = "Review & save";
+          loadedLibraryId = null;
+        }
+      });
+      document.getElementById("analyze-button").addEventListener("click", analyze);
+      aiEnableButton.addEventListener("click", prepareLocalAI);
+      aiAnalyzeButton.addEventListener("click", runLocalAIReview);
+      saveLibraryButton.addEventListener("click", openReviewBeforeSave);
+      document.getElementById("review-close").addEventListener("click", () => reviewDialog.close());
+      document.getElementById("review-cancel").addEventListener("click", () => reviewDialog.close());
+      reviewConfirm.addEventListener("click", saveCurrentConversation);
+      librarySearch.addEventListener("input", renderLibrary);
+      clearLibraryButton.addEventListener("click", deleteAllSavedConversations);
+      followupButton.addEventListener("click", () => {
+        const tasks = analyzedMessages.filter(message => message.action && message.mention);
+        if (!tasks.length || input.value + "\n" + identityInput.value !== lastAnalyzedInput) return;
+        baselineTasks = tasks.map(task => ({ ...task, text: taskDetails(task).text }));
+        followUpMode = true;
+        clearForFollowUp();
+        followupButton.textContent = "Set this chat as a new baseline";
+      });
+      document.getElementById("demo-button").addEventListener("click", () => {
+        input.value = sampleConversation;
+        input.dispatchEvent(new Event("input"));
+        analyze();
+      });
+      document.getElementById("guided-demo-button").addEventListener("click", startGuidedDemo);
+      guidedTourPrevious.addEventListener("click", () => {
+        if (guidedTourIndex > 0) {
+          guidedTourIndex -= 1;
+          renderGuidedTourStep();
+        }
+      });
+      guidedTourNext.addEventListener("click", () => {
+        if (guidedTourIndex >= guidedTourSteps.length - 1) {
+          endGuidedTour();
+          return;
+        }
+        guidedTourIndex += 1;
+        renderGuidedTourStep();
+      });
+      document.getElementById("guided-tour-exit").addEventListener("click", endGuidedTour);
+      document.getElementById("upload-button").addEventListener("click", () => fileInput.click());
+      fileInput.addEventListener("change", () => importFile(fileInput.files[0]));
+      ["dragenter", "dragover"].forEach(eventName => dropHint.addEventListener(eventName, event => {
+        event.preventDefault();
+        dropHint.classList.add("drag-over");
+      }));
+      ["dragleave", "drop"].forEach(eventName => dropHint.addEventListener(eventName, event => {
+        event.preventDefault();
+        dropHint.classList.remove("drag-over");
+      }));
+      dropHint.addEventListener("drop", event => importFile(event.dataTransfer.files[0]));
+      exportButton.addEventListener("click", () => {
+        if (!analyzedMessages.length) return;
+        const actions = analyzedMessages.filter(message => message.action && message.mention);
+        const decisions = analyzedMessages.filter(message => message.decision);
+        const deadlines = analyzedMessages.filter(message => message.urgent);
+        const followUpLines = followUpMode ? followUpResults.map(result => {
+          const override = followUpOverrides.get(result.task.index);
+          const status = override || result.status;
+          const label = override === "done" ? "Marked done" : status === "done" ? "Likely done" : status === "mentioned" ? "Still mentioned" : "No update found";
+          return "- [" + label + "] " + result.task.text + (result.evidence ? " — " + result.evidence.text : "");
+        }) : [];
+        const markdown = [
+          "# Lucent conversation catch-up",
+          "",
+          summarize(analyzedMessages),
+          ...(aiSummaryValue ? ["", "## On-device AI summary", aiSummaryValue] : []),
+          ...(followUpMode ? ["", "## Follow-through", ...(followUpLines.length ? followUpLines : ["- No prior actions to compare."])] : []),
+          "",
+          "## Your actions",
+          ...(actions.length ? actions.map(message => {
+            const details = taskDetails(message);
+            return "- [" + (completedTasks.has(message.index) ? "x" : " ") + "] " + details.text +
+              " — " + (details.owner || "Unassigned") + " — " + details.priority + " priority" +
+              (details.due ? " — Due " + details.due : "") +
+              (details.calendarDate ? " — Confirmed calendar date " + details.calendarDate : "");
+          }) : ["- No direct actions detected."]),
+          "",
+          "## Decisions",
+          ...(decisions.length ? decisions.map(message => "- " + message.text) : ["- No decisions detected."]),
+          "",
+          "## Time-sensitive",
+          ...(deadlines.length ? deadlines.map(message => "- " + message.text) : ["- No time-sensitive messages detected."]),
+          "",
+          "_Generated locally in Lucent. Verify dates and assignments._"
+        ].join("\n");
+        const url = URL.createObjectURL(new Blob([markdown], { type: "text/markdown;charset=utf-8" }));
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "conversation-catch-up.md";
+        link.click();
+        URL.revokeObjectURL(url);
+      });
+      input.addEventListener("keydown", event => {
+        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+          event.preventDefault();
+          analyze();
+        }
+      });
+      filters.forEach(button => button.addEventListener("click", () => {
+        activeFilter = button.dataset.filter;
+        filters.forEach(filter => {
+          const selected = filter === button;
+          filter.classList.toggle("active", selected);
+          filter.setAttribute("aria-selected", String(selected));
+        });
+        renderMessages();
+      }));
+      drawSignalMap();
+      initializeLibrary();
+      if (!browserLocalAI()) {
+        setAIStatus("Built-in on-device AI is not available in this browser. Lucent’s private rule-based analysis works without it.");
+        aiEnableButton.disabled = true;
+      } else if (!window.isSecureContext) {
+        setAIStatus("Built-in AI requires a secure context such as localhost; rule-based analysis works here.");
+      } else {
+        setAIStatus("Optional browser-provided local model detected. Prepare it to enable AI summaries and verified suggestions.");
+      }
+    })();
+  </script>
+</body>
+</html>
