@@ -40,3 +40,5 @@ This file records the app-related prompts provided by the user, in chronological
 >
 > push this entire code to git hub to the link given above
 28. > save all the prompts i have given
+29. > can i get more safety features,innovation and novelity,uxor ui impact,backend and architecture
+30. > let the sever store that chat data

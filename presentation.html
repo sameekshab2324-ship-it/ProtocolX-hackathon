@@ -103,7 +103,7 @@
   </div>
   <main class="deck" aria-label="Lucent product presentation">
     <div class="stage">
-      <section class="slide active" aria-label="Slide 1 of 6">
+      <section class="slide active" aria-label="Slide 1 of 8">
         <div class="brand"><span class="brand-mark" aria-hidden="true">L</span> lucent.</div>
         <div class="content">
           <div class="eyebrow">Conversation clarity, locally</div>
@@ -113,7 +113,7 @@
         </div>
       </section>
 
-      <section class="slide" aria-label="Slide 2 of 6">
+      <section class="slide" aria-label="Slide 2 of 8">
         <div class="brand"><span class="brand-mark" aria-hidden="true">L</span> lucent.</div>
         <div class="content">
           <div class="eyebrow">The problem</div>
@@ -128,7 +128,7 @@
         </div>
       </section>
 
-      <section class="slide" aria-label="Slide 3 of 6">
+      <section class="slide" aria-label="Slide 3 of 8">
         <div class="brand"><span class="brand-mark" aria-hidden="true">L</span> lucent.</div>
         <div class="content">
           <div class="eyebrow">The solution</div>
@@ -144,7 +144,7 @@
         </div>
       </section>
 
-      <section class="slide" aria-label="Slide 4 of 6">
+      <section class="slide" aria-label="Slide 4 of 8">
         <div class="brand"><span class="brand-mark" aria-hidden="true">L</span> lucent.</div>
         <div class="content">
           <div class="eyebrow">A practical workflow</div>
@@ -154,13 +154,13 @@
             <article class="flow-step"><span class="flow-number">02</span><h3>Analyze locally</h3><p>Run the rule-based scan to find likely signals.</p></article>
             <article class="flow-step"><span class="flow-number">03</span><h3>Check the sources</h3><p>Open highlighted messages and verify context.</p></article>
             <article class="flow-step"><span class="flow-number">04</span><h3>Refine the brief</h3><p>Edit tasks, owners, priorities, and dates as needed.</p></article>
-            <article class="flow-step"><span class="flow-number">05</span><h3>Choose what happens next</h3><p>Export, compare a follow-up, or review before saving locally.</p></article>
+            <article class="flow-step"><span class="flow-number">05</span><h3>Choose what happens next</h3><p>Export, compare a follow-up, or review before saving locally or to your opted-in cloud account.</p></article>
           </div>
           <p class="small-note">Demo tip: choose <strong>Guided demo</strong> in Lucent to walk through the main features with a sample conversation. The tour does not save or export anything automatically.</p>
         </div>
       </section>
 
-      <section class="slide" aria-label="Slide 5 of 6">
+      <section class="slide" aria-label="Slide 5 of 8">
         <div class="brand"><span class="brand-mark" aria-hidden="true">L</span> lucent.</div>
         <div class="content">
           <div class="eyebrow">Advantages and responsible use</div>
@@ -170,9 +170,9 @@
               <h3>Why Lucent is useful</h3>
               <ul class="list">
                 <li><span class="check">✓</span><span>Reduces the effort of manually scanning a long transcript.</span></li>
-                <li><span class="check">✓</span><span>Keeps ordinary rule-based analysis in the browser without a hosted AI service.</span></li>
-                <li><span class="check">✓</span><span>Lets you edit, review, and choose what to save or export.</span></li>
-                <li><span class="check">✓</span><span>Supports follow-through comparisons and local search for saved chats.</span></li>
+                <li><span class="check">✓</span><span>Keeps rule-based analysis in the browser; cloud storage is a separate opt-in.</span></li>
+                <li><span class="check">✓</span><span>Lets you inspect, edit, review, and choose what to save or export.</span></li>
+                <li><span class="check">✓</span><span>Links AI findings to exact source quotes and supports follow-through comparisons.</span></li>
               </ul>
             </div>
             <div>
@@ -182,14 +182,47 @@
                 <li><span class="check">✓</span><span>Check each suggested action against its original message and surrounding context.</span></li>
                 <li><span class="caution">!</span><span>Rule-based signals can miss nuance or flag a message incorrectly.</span></li>
                 <li><span class="caution">!</span><span>Optional browser AI depends on browser/device support and may require a model download; verify its suggestions too.</span></li>
-                <li><span class="caution">!</span><span>Only confirm dates you have checked. Local saved chats stay in this browser profile until you delete them.</span></li>
+                <li><span class="caution">!</span><span>A sensitive-data pattern warning is not complete detection or redaction. Inspect the transcript before saving.</span></li>
+                <li><span class="caution">!</span><span>Local saved chats stay in this browser profile; a cloud save sends the full transcript to Supabase.</span></li>
               </ul>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="slide" aria-label="Slide 6 of 6">
+      <section class="slide" aria-label="Slide 6 of 8">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">L</span> lucent.</div>
+        <div class="content">
+          <div class="eyebrow">Safety by design</div>
+          <h2>Clear boundaries. Explicit choices.</h2>
+          <div class="grid">
+            <article class="card"><div class="card-icon" aria-hidden="true">◎</div><h3>Local by default</h3><p>Ordinary analysis and optional supported browser AI run in the browser. No cloud upload happens just because a chat is analyzed.</p></article>
+            <article class="card"><div class="card-icon" aria-hidden="true">!</div><h3>Pre-save privacy check</h3><p>A lightweight pattern scan can flag possible emails, phone-like numbers, or credential-like text before review. It warns; it does not redact or guarantee detection.</p></article>
+            <article class="card"><div class="card-icon" aria-hidden="true">✓</div><h3>Consent before cloud copy</h3><p>Cloud save is a separate action requiring review and an acknowledgement that the full transcript will be sent to the configured project.</p></article>
+            <article class="card"><div class="card-icon" aria-hidden="true">⌑</div><h3>Account-scoped rows</h3><p>Supabase authentication and PostgreSQL row-level security scope conversations to the signed-in user. Users can delete individual items or all account rows.</p></article>
+          </div>
+          <p class="small-note">Use a trusted Supabase project, HTTPS, and reviewed access policies. Do not store service-role keys in browser code. A managed database still has its own backup and retention policies.</p>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Slide 7 of 8">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">L</span> lucent.</div>
+        <div class="content">
+          <div class="eyebrow">Architecture and novelty</div>
+          <h2>A local-first product with an optional cloud vault.</h2>
+          <div class="flow">
+            <article class="flow-step"><span class="flow-number">01</span><h3>Browser UI</h3><p>Transcript input, review, Canvas signals, and user-controlled exports.</p></article>
+            <article class="flow-step"><span class="flow-number">02</span><h3>Local analysis</h3><p>Rule-based extraction; optional browser-provided on-device model.</p></article>
+            <article class="flow-step"><span class="flow-number">03</span><h3>Explicit boundary</h3><p>User reviews findings and separately approves a full-transcript cloud save.</p></article>
+            <article class="flow-step"><span class="flow-number">04</span><h3>Supabase Auth + REST</h3><p>Browser sends authenticated requests over HTTPS using a publishable key.</p></article>
+            <article class="flow-step"><span class="flow-number">05</span><h3>PostgreSQL + RLS</h3><p>Policies restrict each row to its owner; no service-role key is in the client.</p></article>
+          </div>
+          <div class="quote"><strong>Novel interaction:</strong> a catch-up is an evidence-first “conversation receipt”—suggested actions and decisions point back to the message that supports them, then the user decides whether to act, export, or retain a copy.</div>
+          <p class="small-note">The app needs a Supabase project and the SQL in <strong>supabase/schema.sql</strong> before cloud storage is available. Follow <strong>SUPABASE_SETUP.md</strong>; no backend credentials are preconfigured.</p>
+        </div>
+      </section>
+
+      <section class="slide" aria-label="Slide 8 of 8">
         <div class="brand"><span class="brand-mark" aria-hidden="true">L</span> lucent.</div>
         <div class="content">
           <div class="eyebrow">The takeaway</div>

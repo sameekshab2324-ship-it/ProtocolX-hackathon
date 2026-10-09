@@ -187,6 +187,34 @@
     .timeline-owner { display: block; margin-top: 3px; color: #93988f; font-size: 9px; }
     .timeline-due { color: #7d786c; font-size: 9px; white-space: nowrap; }
     .library-panel { margin-top: 22px; padding: 20px 22px; }
+    .cloud-panel { margin-top: 22px; padding: 20px 22px; border-color: #dce8df; }
+    .cloud-panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .cloud-panel-title { font-size: 14px; font-weight: 750; }
+    .cloud-panel-caption, .cloud-safety-note { margin-top: 5px; color: #778178; font-size: 10px; line-height: 1.55; }
+    .cloud-safety-note { padding: 10px 11px; border: 1px solid #e2ebe4; border-radius: 8px; background: #f7faf7; }
+    .cloud-auth-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto auto; gap: 8px; align-items: end; margin-top: 13px; }
+    .cloud-auth-form label { display: grid; gap: 5px; color: #707970; font-size: 9px; font-weight: 650; }
+    .cloud-auth-form input { width: 100%; min-width: 0; padding: 8px 9px; border: 1px solid #e1e6e1; border-radius: 7px; color: var(--ink); font: inherit; font-size: 11px; }
+    .cloud-auth-form input:focus { outline: 2px solid #a8d0b7; outline-offset: 1px; }
+    .cloud-auth-actions { display: flex; gap: 6px; }
+    .cloud-auth-actions button { white-space: nowrap; }
+    .cloud-status { min-height: 18px; margin-top: 8px; color: #727c73; font-size: 10px; line-height: 1.5; }
+    .cloud-status[data-error="true"] { color: #a34438; }
+    .cloud-setup-link { color: var(--green); font-size: 10px; font-weight: 700; text-decoration: none; }
+    .cloud-setup-link:hover { text-decoration: underline; }
+    .cloud-vault[hidden], .cloud-signed-out[hidden] { display: none; }
+    .cloud-vault-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 13px 0 8px; }
+    .cloud-vault-title { font-size: 11px; font-weight: 750; }
+    .cloud-vault-controls { display: flex; gap: 7px; }
+    .cloud-vault-controls .library-search { flex: 1; }
+    .cloud-account { color: #68756b; font-size: 10px; overflow-wrap: anywhere; }
+    .review-cloud { margin-top: 13px; padding: 12px; border: 1px solid #e3e9e3; border-radius: 8px; background: #f8faf8; }
+    .review-cloud-copy { margin: 0 0 9px; color: #707970; font-size: 10px; line-height: 1.5; }
+    .review-cloud-ack { display: flex; align-items: flex-start; gap: 8px; color: #59645b; font-size: 10px; line-height: 1.5; }
+    .review-cloud-ack input { flex: 0 0 auto; margin: 2px 0 0; accent-color: var(--green); }
+    .sensitivity-note { margin: 8px 0; padding: 9px 10px; border: 1px solid #f0dfbf; border-radius: 7px; background: #fff9ed; color: #805d2a; font-size: 10px; line-height: 1.5; }
+    .sensitivity-note[hidden] { display: none; }
+    .architecture-note { margin-top: 10px; padding: 11px 12px; border: 1px dashed #dce5dc; border-radius: 8px; background: #fff; color: #6b756c; font-size: 9px; line-height: 1.55; }
     .library-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
     .library-title { font-size: 14px; font-weight: 750; }
     .library-caption { margin-top: 4px; color: #858c84; font-size: 10px; line-height: 1.5; }
@@ -276,6 +304,10 @@
       .library-item { flex-direction: column; }
       .library-item-actions { width: 100%; }
       .library-item-actions button { flex: 1; }
+      .cloud-auth-form { grid-template-columns: 1fr 1fr; }
+      .cloud-auth-actions { grid-column: 1 / -1; }
+      .cloud-auth-actions button { flex: 1; }
+      .cloud-panel, .library-panel { padding: 17px; }
     }
   </style>
 </head>
@@ -292,7 +324,7 @@
         <span>lucent<span>.</span></span>
       </div>
       <div class="topbar-right">
-        <div class="local-badge"><span class="local-dot" aria-hidden="true"></span>Private by design</div>
+        <div class="local-badge"><span class="local-dot" aria-hidden="true"></span>Local by default</div>
         <div class="avatar" aria-label="Your profile">SA</div>
       </div>
     </header>
@@ -344,7 +376,7 @@
           </div>
           <div class="privacy-note" id="privacy-note">
             <span aria-hidden="true">◈</span>
-            <span><strong>Local-first.</strong> Analysis stays in this browser. The optional browser AI model may need a one-time download; chats are never sent to a cloud service. Saved findings require your confirmation.</span>
+            <span><strong>Local by default.</strong> Rule-based analysis and optional browser AI run on this device. Nothing is sent to a server unless you sign in and explicitly approve a cloud save; that save includes the full transcript.</span>
           </div>
         </div>
 
@@ -410,6 +442,47 @@
           </div>
         </div>
       </section>
+      <section class="panel cloud-panel" aria-labelledby="cloud-title">
+        <div class="cloud-panel-head">
+          <div>
+            <div class="cloud-panel-title" id="cloud-title">Optional cloud vault</div>
+            <div class="cloud-panel-caption">Sign in to keep reviewed conversations on your Supabase account and access them on other devices.</div>
+          </div>
+          <span class="local-badge"><span class="local-dot" aria-hidden="true"></span>Account-scoped</span>
+        </div>
+        <div class="cloud-safety-note">Cloud storage is off until you configure Supabase, sign in, review a conversation, and explicitly confirm a cloud save. At that point the full transcript is sent to your Supabase project. Cloud data is not end-to-end encrypted by Lucent; choose a project you trust. Local analysis and the on-device AI option remain separate.</div>
+        <div class="architecture-note"><strong>Architecture:</strong> browser UI → local analysis → optional authenticated Supabase REST API → PostgreSQL row-level security. No app server or service-role key is embedded in the browser. The database authorizes each row against the signed-in user.</div>
+        <p class="cloud-panel-caption"><a class="cloud-setup-link" href="https://github.com/sameekshab2324-ship-it/ProtocolX-hackathon/blob/main/SUPABASE_SETUP.md" target="_blank" rel="noopener">Read the Supabase setup and security guide</a></p>
+        <form class="cloud-auth-form cloud-signed-out" id="cloud-auth-form">
+          <label>Email
+            <input id="cloud-email" type="email" autocomplete="username" required maxlength="254" placeholder="you@example.com">
+          </label>
+          <label>Password
+            <input id="cloud-password" type="password" autocomplete="current-password" required minlength="8" maxlength="128" placeholder="At least 8 characters">
+          </label>
+          <div class="cloud-auth-actions">
+            <button class="secondary-button" id="cloud-sign-in" type="submit">Sign in</button>
+            <button class="secondary-button" id="cloud-sign-up" type="button">Create account</button>
+          </div>
+        </form>
+        <div class="cloud-vault-head cloud-vault" id="cloud-account" hidden>
+          <span class="cloud-account" id="cloud-account-label"></span>
+          <button class="secondary-button" id="cloud-sign-out" type="button">Sign out</button>
+        </div>
+        <div class="cloud-status" id="cloud-status" role="status" aria-live="polite"></div>
+        <div class="cloud-vault" id="cloud-vault" hidden>
+          <div class="cloud-vault-head">
+            <span class="cloud-vault-title">Your server conversations</span>
+            <div class="cloud-vault-controls">
+              <button class="secondary-button" id="cloud-refresh" type="button">Refresh</button>
+              <button class="secondary-button" id="cloud-delete-all" type="button">Delete all</button>
+            </div>
+          </div>
+          <label class="sr-only" for="cloud-search">Search server conversations</label>
+          <input class="library-search" id="cloud-search" type="search" placeholder="Search your cloud vault…" autocomplete="off">
+          <div class="library-list" id="cloud-list" aria-live="polite"><div class="library-empty">No conversations loaded.</div></div>
+        </div>
+      </section>
       <section class="panel library-panel" aria-labelledby="library-title">
         <div class="library-head">
           <div>
@@ -433,10 +506,16 @@
             <h2 class="review-title" id="review-title">Review before saving</h2>
             <button class="secondary-button" id="review-close" type="button" aria-label="Close review">Close</button>
           </div>
-          <p class="review-description">Confirm, edit, or exclude detected actions and decisions. Your original transcript is saved as supplied; only included findings are added to the library’s searchable fields.</p>
+          <p class="review-description">Confirm, edit, or exclude detected actions and decisions. A local save stays in this browser. A cloud save sends the full transcript to your signed-in Supabase account.</p>
           <div class="review-list" id="review-list"></div>
+          <div class="sensitivity-note" id="sensitivity-note" hidden></div>
+          <div class="review-cloud" id="review-cloud" hidden>
+            <p class="review-cloud-copy">Server copy: the transcript and included findings will be sent over HTTPS to your configured Supabase project and stored under your account. Delete cloud copies from the cloud vault.</p>
+            <label class="review-cloud-ack"><input id="cloud-save-ack" type="checkbox"> I understand and explicitly approve storing the full transcript in my cloud account.</label>
+          </div>
           <div class="review-actions">
             <button class="secondary-button" id="review-cancel" type="button">Cancel</button>
+            <button class="secondary-button" id="review-cloud-save" type="button" hidden disabled>Save reviewed copy to cloud</button>
             <button class="primary-button" id="review-confirm" type="button" style="width:auto">Save reviewed chat</button>
           </div>
         </form>
@@ -458,6 +537,7 @@
     </main>
   </div>
 
+  <script src="supabase-config.js"></script>
   <script>
     (() => {
       const sampleConversation = `[9:12 AM] Maya: Morning team! Quick update before everyone catches up.
@@ -499,6 +579,22 @@
       const aiAnalyzeButton = document.getElementById("ai-analyze-button");
       const aiSummary = document.getElementById("ai-summary");
       const aiSummaryText = document.getElementById("ai-summary-text");
+      const cloudAuthForm = document.getElementById("cloud-auth-form");
+      const cloudEmailInput = document.getElementById("cloud-email");
+      const cloudPasswordInput = document.getElementById("cloud-password");
+      const cloudSignUpButton = document.getElementById("cloud-sign-up");
+      const cloudSignOutButton = document.getElementById("cloud-sign-out");
+      const cloudAccount = document.getElementById("cloud-account");
+      const cloudAccountLabel = document.getElementById("cloud-account-label");
+      const cloudStatus = document.getElementById("cloud-status");
+      const cloudVault = document.getElementById("cloud-vault");
+      const cloudList = document.getElementById("cloud-list");
+      const cloudSearch = document.getElementById("cloud-search");
+      const cloudDeleteAllButton = document.getElementById("cloud-delete-all");
+      const reviewCloud = document.getElementById("review-cloud");
+      const reviewCloudSaveButton = document.getElementById("review-cloud-save");
+      const cloudSaveAcknowledgement = document.getElementById("cloud-save-ack");
+      const sensitivityNote = document.getElementById("sensitivity-note");
       const guidedTour = document.getElementById("guided-tour");
       const guidedTourTitle = document.getElementById("guided-tour-title");
       const guidedTourDescription = document.getElementById("guided-tour-description");
@@ -526,6 +622,9 @@
       let aiFindings = [];
       let aiSummaryValue = "";
       let aiBusy = false;
+      let cloudSession = null;
+      let cloudRecords = [];
+      let loadedCloudId = null;
       let guidedTourSteps = [];
       let guidedTourIndex = 0;
       let guidedTourFocus = null;
@@ -797,6 +896,380 @@
         }
       }
 
+      function getSupabaseConfig() {
+        const supplied = window.LUCENT_SUPABASE_CONFIG;
+        if (!supplied || typeof supplied.url !== "string" || typeof supplied.anonKey !== "string") return null;
+        const url = supplied.url.trim().replace(/\/+$/, "");
+        const anonKey = supplied.anonKey.trim();
+        if (!url || !anonKey) return null;
+        try {
+          const parsed = new URL(url);
+          const localDevelopment = ["localhost", "127.0.0.1"].includes(parsed.hostname);
+          if (parsed.protocol !== "https:" && !(localDevelopment && parsed.protocol === "http:")) return null;
+          return { url: parsed.origin, anonKey };
+        } catch {
+          return null;
+        }
+      }
+
+      function setCloudStatus(message, isError) {
+        cloudStatus.textContent = message;
+        cloudStatus.dataset.error = String(Boolean(isError));
+      }
+
+      function updateCloudAuthUI() {
+        const signedIn = Boolean(cloudSession && cloudSession.access_token && cloudSession.user);
+        cloudAuthForm.hidden = signedIn;
+        cloudAccount.hidden = !signedIn;
+        cloudVault.hidden = !signedIn;
+        reviewCloudSaveButton.hidden = !signedIn;
+        reviewCloud.hidden = !signedIn;
+        cloudAccountLabel.textContent = signedIn ? "Signed in as " + (cloudSession.user.email || "your account") : "";
+        reviewCloudSaveButton.disabled = !signedIn || !cloudSaveAcknowledgement.checked;
+        const analyzedInputIsCurrent = analyzedMessages.length > 0 &&
+          input.value + "\n" + identityInput.value === lastAnalyzedInput;
+        saveLibraryButton.disabled = !analyzedInputIsCurrent || !(libraryDatabase || signedIn);
+      }
+
+      async function supabaseAuthRequest(endpoint, body) {
+        const config = getSupabaseConfig();
+        if (!config) throw new Error("Supabase is not configured. Add the project URL and publishable key to supabase-config.js.");
+        let response;
+        try {
+          response = await fetch(config.url + endpoint, {
+            method: "POST",
+            headers: { apikey: config.anonKey, "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          });
+        } catch (error) {
+          throw new Error("Could not reach Supabase: " + (error.message || "network error"));
+        }
+        const raw = await response.text();
+        let result = {};
+        if (raw) {
+          try { result = JSON.parse(raw); }
+          catch { throw new Error("Supabase returned an unreadable response."); }
+        }
+        if (!response.ok) {
+          throw new Error(result.msg || result.message || result.error_description || result.error || "Authentication request failed (" + response.status + ").");
+        }
+        return result;
+      }
+
+      function setCloudSession(session) {
+        cloudSession = session && session.access_token
+          ? { ...session, expiresAt: Date.now() + Number(session.expires_in || 3600) * 1000 }
+          : null;
+        updateCloudAuthUI();
+      }
+
+      async function refreshCloudSession() {
+        if (!cloudSession || !cloudSession.refresh_token) return false;
+        const refreshToken = cloudSession.refresh_token;
+        try {
+          const refreshed = await supabaseAuthRequest("/auth/v1/token?grant_type=refresh_token", { refresh_token: refreshToken });
+          if (!refreshed.access_token) throw new Error("Supabase did not return a renewed session.");
+          setCloudSession(refreshed);
+          return true;
+        } catch (error) {
+          setCloudSession(null);
+          cloudRecords = [];
+          renderCloudVault();
+          setCloudStatus("Your cloud session expired. Sign in again. " + error.message, true);
+          return false;
+        }
+      }
+
+      async function supabaseRequest(path, options, retryAfterRefresh) {
+        const config = getSupabaseConfig();
+        if (!config) throw new Error("Supabase is not configured.");
+        if (!cloudSession || !cloudSession.access_token) throw new Error("Sign in to your cloud account first.");
+        const requestOptions = options || {};
+        const headers = {
+          apikey: config.anonKey,
+          Authorization: "Bearer " + cloudSession.access_token,
+          "Content-Type": "application/json"
+        };
+        if (requestOptions.prefer) headers.Prefer = requestOptions.prefer;
+        let response;
+        try {
+          response = await fetch(config.url + path, {
+            method: requestOptions.method || "GET",
+            headers,
+            body: requestOptions.body === undefined ? undefined : JSON.stringify(requestOptions.body)
+          });
+        } catch (error) {
+          throw new Error("Could not reach Supabase: " + (error.message || "network error"));
+        }
+        if (response.status === 401 && retryAfterRefresh !== false) {
+          if (await refreshCloudSession()) return supabaseRequest(path, requestOptions, false);
+          throw new Error("The cloud session is no longer valid. Sign in again.");
+        }
+        const raw = await response.text();
+        let result = null;
+        if (raw) {
+          try { result = JSON.parse(raw); }
+          catch { throw new Error("Supabase returned an unreadable response."); }
+        }
+        if (!response.ok) {
+          const detail = result && (result.message || result.details || result.hint || result.error_description || result.error);
+          throw new Error(detail || "Supabase request failed (" + response.status + "). Check the table schema and row-level security policies.");
+        }
+        return result;
+      }
+
+      async function authenticateCloudAccount(email, password, createAccount) {
+        const config = getSupabaseConfig();
+        if (!config) {
+          setCloudStatus("Configure your Supabase project URL and publishable key in supabase-config.js first.", true);
+          return;
+        }
+        const signInButton = document.getElementById("cloud-sign-in");
+        signInButton.disabled = true;
+        cloudSignUpButton.disabled = true;
+        setCloudStatus(createAccount ? "Creating your account…" : "Signing in…");
+        try {
+          const result = await supabaseAuthRequest(
+            createAccount ? "/auth/v1/signup" : "/auth/v1/token?grant_type=password",
+            { email, password }
+          );
+          if (!result.access_token) {
+            setCloudStatus("Account created. Check your email to confirm it, then sign in here.");
+            return;
+          }
+          setCloudSession(result);
+          cloudPasswordInput.value = "";
+          setCloudStatus("Signed in. Your cloud vault is private to this account.");
+          await refreshCloudVault();
+        } catch (error) {
+          setCloudStatus(error.message || "Could not authenticate with Supabase.", true);
+        } finally {
+          signInButton.disabled = false;
+          cloudSignUpButton.disabled = false;
+        }
+      }
+
+      async function signOutCloudAccount() {
+        let logoutError = "";
+        if (cloudSession && cloudSession.access_token && getSupabaseConfig()) {
+          try {
+            await supabaseRequest("/auth/v1/logout", { method: "POST" });
+          } catch (error) {
+            logoutError = error.message || "Supabase sign-out request failed.";
+          }
+        }
+        setCloudSession(null);
+        cloudRecords = [];
+        loadedCloudId = null;
+        renderCloudVault();
+        setCloudStatus(logoutError ? "Signed out in this tab; server logout reported: " + logoutError : "Signed out. This tab did not retain your session.", Boolean(logoutError));
+      }
+
+      async function refreshCloudVault() {
+        if (!cloudSession) return;
+        setCloudStatus("Loading your account’s cloud conversations…");
+        try {
+          const records = await supabaseRequest(
+            "/rest/v1/conversation_records?select=id,user_id,title,transcript,identity,summary,message_count,actions,decisions,created_at,updated_at&order=updated_at.desc&limit=200"
+          );
+          if (!Array.isArray(records)) throw new Error("The cloud vault returned an unexpected result.");
+          cloudRecords = records.map(record => ({
+            ...record,
+            messageCount: record.message_count,
+            savedAt: Date.parse(record.updated_at || record.created_at) || Date.now()
+          }));
+          renderCloudVault();
+          setCloudStatus("Cloud vault refreshed. " + cloudRecords.length + (cloudRecords.length === 200 ? "+ conversations" : " conversation" + (cloudRecords.length === 1 ? "" : "s")) + " loaded.");
+        } catch (error) {
+          setCloudStatus("Could not load cloud conversations: " + (error.message || "request failed"), true);
+          cloudList.innerHTML = '<div class="library-empty">Cloud conversations could not be loaded. Check your Supabase setup and sign-in.</div>';
+        }
+      }
+
+      function renderCloudVault() {
+        const query = cloudSearch.value.trim().toLowerCase();
+        const filtered = cloudRecords.filter(record => {
+          const searchable = [
+            record.title, record.transcript, record.summary, record.identity,
+            ...(record.actions || []).flatMap(action => [action.text, action.owner, action.due]),
+            ...(record.decisions || [])
+          ].join(" ").toLowerCase();
+          return !query || searchable.includes(query);
+        });
+        cloudDeleteAllButton.disabled = cloudRecords.length === 0;
+        if (!cloudRecords.length) {
+          cloudList.innerHTML = '<div class="library-empty">No cloud conversations yet. Analyze a chat, review its findings, then explicitly approve a cloud save.</div>';
+          return;
+        }
+        if (!filtered.length) {
+          cloudList.innerHTML = '<div class="library-empty">No cloud conversations match this search.</div>';
+          return;
+        }
+        cloudList.innerHTML = filtered.map(record => {
+          const savedAt = new Date(record.updated_at || record.created_at);
+          const dateLabel = Number.isNaN(savedAt.getTime()) ? "Saved to cloud" : savedAt.toLocaleString();
+          return `<article class="library-item">
+            <div class="library-item-main">
+              <div class="library-item-title">${escapeHtml(record.title || "Conversation catch-up")}</div>
+              <div class="library-item-meta">${escapeHtml(dateLabel)} · ${record.messageCount} messages · ${(record.actions || []).length} actions · ${(record.decisions || []).length} decisions</div>
+              <div class="library-item-summary">${escapeHtml(record.summary || "No summary available.")}</div>
+            </div>
+            <div class="library-item-actions">
+              <button class="secondary-button" type="button" data-cloud-open="${escapeHtml(record.id)}">Open</button>
+              <button class="secondary-button" type="button" data-cloud-delete="${escapeHtml(record.id)}">Delete</button>
+            </div>
+          </article>`;
+        }).join("");
+        cloudList.querySelectorAll("[data-cloud-open]").forEach(button => {
+          button.addEventListener("click", () => loadCloudConversation(button.dataset.cloudOpen));
+        });
+        cloudList.querySelectorAll("[data-cloud-delete]").forEach(button => {
+          button.addEventListener("click", () => deleteCloudConversation(button.dataset.cloudDelete));
+        });
+      }
+
+      function cloudRecordFromReview(id) {
+        const selected = reviewFindings.filter(finding => finding.included && finding.text.trim());
+        const actions = selected.filter(finding => finding.type === "action").map(finding => ({
+          index: finding.index,
+          text: finding.text.trim(),
+          owner: finding.owner.trim(),
+          due: finding.due.trim(),
+          calendarDate: finding.calendarDate || "",
+          priority: finding.priority
+        }));
+        const decisions = selected.filter(finding => finding.type === "decision").map(finding => finding.text.trim());
+        const first = analyzedMessages.find(message => message.text.trim());
+        return {
+          id,
+          user_id: cloudSession.user.id,
+          title: first ? first.text.slice(0, 72) : "Conversation catch-up",
+          transcript: input.value,
+          identity: identityInput.value.trim(),
+          summary: [
+            actions.length ? "Confirmed actions: " + actions.map(action => action.text).join(" | ") : "",
+            decisions.length ? "Confirmed decisions: " + decisions.join(" | ") : ""
+          ].filter(Boolean).join(" ") || "No findings confirmed. Transcript saved for later search.",
+          message_count: analyzedMessages.length,
+          actions,
+          decisions,
+          updated_at: new Date().toISOString()
+        };
+      }
+
+      async function saveReviewedConversationToCloud() {
+        if (!cloudSession || !cloudSaveAcknowledgement.checked || !analyzedMessages.length ||
+            input.value + "\n" + identityInput.value !== lastAnalyzedInput) return;
+        if (new Blob([input.value]).size > 5 * 1024 * 1024) {
+          setCloudStatus("This transcript exceeds Lucent’s 5 MB cloud-save limit. Shorten it before saving.", true);
+          return;
+        }
+        if (sensitivityNote.hidden) {
+          sensitivityNote.hidden = false;
+        }
+        reviewCloudSaveButton.disabled = true;
+        reviewConfirm.disabled = true;
+        setCloudStatus("Sending the reviewed transcript to your Supabase account…");
+        try {
+          const existing = cloudRecords.find(record =>
+            record.transcript === input.value && record.identity === identityInput.value.trim()
+          );
+          const id = loadedCloudId || (existing && existing.id) ||
+            (window.crypto && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : "");
+          if (!id) throw new Error("This browser cannot generate a secure conversation ID. Use a modern browser and retry.");
+          const record = cloudRecordFromReview(id);
+          await supabaseRequest(
+            "/rest/v1/conversation_records?on_conflict=user_id,id",
+            { method: "POST", body: record, prefer: "resolution=merge-duplicates,return=minimal" }
+          );
+          loadedCloudId = id;
+          await refreshCloudVault();
+          cloudSaveAcknowledgement.checked = false;
+          updateCloudAuthUI();
+          reviewDialog.close();
+          setCloudStatus("Reviewed transcript saved to your Supabase account. Open the cloud vault to access or delete it.");
+        } catch (error) {
+          setCloudStatus("Could not save the cloud conversation: " + (error.message || "request failed"), true);
+        } finally {
+          reviewConfirm.disabled = false;
+          updateCloudAuthUI();
+        }
+      }
+
+      function loadCloudConversation(id) {
+        const record = cloudRecords.find(item => item.id === id);
+        if (!record) {
+          setCloudStatus("That cloud conversation is no longer available. Refresh the vault.");
+          return;
+        }
+        followUpMode = false;
+        baselineTasks = [];
+        followUpResults = [];
+        followUpOverrides = new Map();
+        loadedCloudId = record.id;
+        loadedLibraryId = null;
+        inputHeading.textContent = "Paste a conversation";
+        analyzeButton.innerHTML = '<span aria-hidden="true">✦</span> Find what matters';
+        input.value = record.transcript;
+        identityInput.value = record.identity || identityInput.value;
+        input.dispatchEvent(new Event("input"));
+        analyze();
+        (record.actions || []).forEach(savedAction => {
+          const message = analyzedMessages.find(item => item.index === savedAction.index) ||
+            analyzedMessages.find(item => item.text === savedAction.text);
+          if (message) taskEdits.set(message.index, { ...savedAction });
+        });
+        loadedCloudId = record.id;
+        renderActionBoard();
+        renderDeadlineTimeline();
+        document.querySelector(".input-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+        setCloudStatus("Opened this conversation from your Supabase account.");
+      }
+
+      async function deleteCloudConversation(id) {
+        const record = cloudRecords.find(item => item.id === id);
+        if (!record || !window.confirm("Delete this conversation permanently from your Supabase account?")) return;
+        try {
+          await supabaseRequest(
+            "/rest/v1/conversation_records?id=eq." + encodeURIComponent(id) + "&user_id=eq." + encodeURIComponent(cloudSession.user.id),
+            { method: "DELETE", prefer: "return=minimal" }
+          );
+          if (loadedCloudId === id) loadedCloudId = null;
+          cloudRecords = cloudRecords.filter(item => item.id !== id);
+          renderCloudVault();
+          setCloudStatus("Conversation deleted from your Supabase account.");
+        } catch (error) {
+          setCloudStatus("Could not delete the cloud conversation: " + (error.message || "request failed"), true);
+        }
+      }
+
+      async function deleteAllCloudConversations() {
+        if (!cloudSession || !cloudRecords.length ||
+            !window.confirm("Permanently delete every conversation in your Supabase account? This cannot be undone.")) return;
+        try {
+          await supabaseRequest(
+            "/rest/v1/conversation_records?user_id=eq." + encodeURIComponent(cloudSession.user.id),
+            { method: "DELETE", prefer: "return=minimal" }
+          );
+          cloudRecords = [];
+          loadedCloudId = null;
+          renderCloudVault();
+          setCloudStatus("All conversations for this account were deleted from Supabase.");
+        } catch (error) {
+          setCloudStatus("Could not delete all cloud conversations: " + (error.message || "request failed"), true);
+        }
+      }
+
+      function detectSensitiveDataCategories(text) {
+        const categories = [];
+        if (/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i.test(text)) categories.push("email addresses");
+        const digitRuns = text.match(/\+?\d[\d\s().-]{8,}\d/g) || [];
+        if (digitRuns.some(value => value.replace(/\D/g, "").length >= 10)) categories.push("phone-like numbers");
+        if (/\b(?:api[_-]?key|access[_-]?token|secret|password|client[_-]?secret)\b\s*[:=]\s*\S+/i.test(text) ||
+            /\bBearer\s+[A-Za-z0-9._~+/-]{12,}/i.test(text)) categories.push("credential-like strings");
+        return categories;
+      }
+
       function browserLocalAI() {
         return window.LanguageModel || (window.ai && window.ai.languageModel) || null;
       }
@@ -897,6 +1370,11 @@
           description: "If your browser offers a local language model, you can prepare it and request a second summary. AI suggestions are source-checked and still need your review; the rule-based flow works without AI."
         },
         {
+          selector: ".cloud-panel",
+          title: "Optional cloud vault",
+          description: "With Supabase configured, sign in to store reviewed conversations on your account. Cloud saving has its own consent step; the full transcript is sent to your project only when you approve it."
+        },
+        {
           selector: "#export-button",
           title: "Take the brief with you",
           description: "Export a Markdown catch-up for your notes. This does not save the conversation to Lucent’s library."
@@ -904,7 +1382,7 @@
         {
           selector: "#save-library-button",
           title: "Save only after review",
-          description: "Review, edit, or exclude findings before explicitly saving a conversation to this device’s local library. The guided demo never saves or exports anything for you."
+          description: "Review, edit, or exclude findings before saving locally. If signed into the optional cloud vault, a separate acknowledgement is required before sending the full transcript to Supabase. The demo never saves or exports."
         }
       ];
 
@@ -1101,7 +1579,7 @@
       }
 
       function openReviewBeforeSave() {
-        if (!libraryDatabase || !analyzedMessages.length || input.value + "\n" + identityInput.value !== lastAnalyzedInput) return;
+        if ((!libraryDatabase && !cloudSession) || !analyzedMessages.length || input.value + "\n" + identityInput.value !== lastAnalyzedInput) return;
         reviewFindings = [];
         analyzedMessages.forEach(message => {
           if (message.action && message.mention) {
@@ -1128,6 +1606,7 @@
               time: message.time,
               owner: "",
               due: "",
+              calendarDate: "",
               priority: "Normal",
               included: true
             });
@@ -1142,6 +1621,18 @@
           }
         });
         renderReviewFindings();
+        cloudSaveAcknowledgement.checked = false;
+        const sensitiveCategories = detectSensitiveDataCategories(input.value);
+        if (sensitiveCategories.length) {
+          sensitivityNote.textContent = "Privacy check: this transcript may contain " + sensitiveCategories.join(", ") +
+            ". This quick pattern scan can miss sensitive information—inspect the transcript yourself before any save.";
+          sensitivityNote.hidden = false;
+        } else {
+          sensitivityNote.textContent = "";
+          sensitivityNote.hidden = true;
+        }
+        updateCloudAuthUI();
+        reviewConfirm.hidden = !libraryDatabase;
         reviewConfirm.textContent = loadedLibraryId ? "Update saved chat" : "Save reviewed chat";
         if (typeof reviewDialog.showModal === "function") reviewDialog.showModal();
         else libraryStatus.textContent = "This browser does not support the review dialog.";
@@ -1204,6 +1695,7 @@
         baselineTasks = [];
         followUpResults = [];
         followUpOverrides = new Map();
+        loadedCloudId = null;
         inputHeading.textContent = "Paste a conversation";
         analyzeButton.innerHTML = '<span aria-hidden="true">✦</span> Find what matters';
         input.value = record.transcript;
@@ -1793,7 +2285,7 @@
         const savedRecord = libraryRecords.find(record => record.transcript === input.value && record.identity === identityInput.value.trim());
         loadedLibraryId = savedRecord ? savedRecord.id : null;
         saveLibraryButton.textContent = savedRecord ? "Review & update" : "Review & save";
-        saveLibraryButton.disabled = !libraryDatabase;
+        saveLibraryButton.disabled = !libraryDatabase && !cloudSession;
         aiAnalyzeButton.disabled = !localAISession;
         if (localAISession) setAIStatus("Local model ready. Run an AI review for a grounded summary and suggestions.");
       }
@@ -1810,6 +2302,7 @@
           saveLibraryButton.disabled = true;
           saveLibraryButton.textContent = "Review & save";
           loadedLibraryId = null;
+          loadedCloudId = null;
         }
       });
       identityInput.addEventListener("input", () => {
@@ -1821,12 +2314,27 @@
           saveLibraryButton.disabled = true;
           saveLibraryButton.textContent = "Review & save";
           loadedLibraryId = null;
+          loadedCloudId = null;
         }
       });
       document.getElementById("analyze-button").addEventListener("click", analyze);
       aiEnableButton.addEventListener("click", prepareLocalAI);
       aiAnalyzeButton.addEventListener("click", runLocalAIReview);
       saveLibraryButton.addEventListener("click", openReviewBeforeSave);
+      cloudAuthForm.addEventListener("submit", event => {
+        event.preventDefault();
+        authenticateCloudAccount(cloudEmailInput.value.trim(), cloudPasswordInput.value, false);
+      });
+      cloudSignUpButton.addEventListener("click", () => {
+        if (!cloudAuthForm.reportValidity()) return;
+        authenticateCloudAccount(cloudEmailInput.value.trim(), cloudPasswordInput.value, true);
+      });
+      cloudSignOutButton.addEventListener("click", signOutCloudAccount);
+      document.getElementById("cloud-refresh").addEventListener("click", refreshCloudVault);
+      document.getElementById("cloud-delete-all").addEventListener("click", deleteAllCloudConversations);
+      cloudSearch.addEventListener("input", renderCloudVault);
+      cloudSaveAcknowledgement.addEventListener("change", updateCloudAuthUI);
+      reviewCloudSaveButton.addEventListener("click", saveReviewedConversationToCloud);
       document.getElementById("review-close").addEventListener("click", () => reviewDialog.close());
       document.getElementById("review-cancel").addEventListener("click", () => reviewDialog.close());
       reviewConfirm.addEventListener("click", saveCurrentConversation);
@@ -1931,6 +2439,12 @@
       }));
       drawSignalMap();
       initializeLibrary();
+      updateCloudAuthUI();
+      if (getSupabaseConfig()) {
+        setCloudStatus("Supabase configuration detected. Sign in to access your account-scoped cloud vault.");
+      } else {
+        setCloudStatus("Cloud vault setup required: follow SUPABASE_SETUP.md and add the project URL and publishable key to supabase-config.js.");
+      }
       if (!browserLocalAI()) {
         setAIStatus("Built-in on-device AI is not available in this browser. Lucent’s private rule-based analysis works without it.");
         aiEnableButton.disabled = true;
